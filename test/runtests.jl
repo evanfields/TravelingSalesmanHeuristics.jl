@@ -44,6 +44,10 @@ function test_nearest_neighbor()
 		path, cost = nearestNeighbor(dm)
 		@test cost > 0
 		testpathvalidity(path, true)
+		# repetitive
+		path, cost = nearestNeighbor(dm, repetitive = true)
+		@test cost > 0
+		testpathvalidity(path, true)
 		# no loop, 2 opt
 		path, cost = nearestNeighbor(dm, closepath = false)
 		@test cost > 0
