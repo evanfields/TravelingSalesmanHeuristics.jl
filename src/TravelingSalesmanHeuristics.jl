@@ -1,4 +1,4 @@
-module TSPHeuristics
+module TravelingSalesmanHeuristics
 using Distances
 
 export nearestNeighbor

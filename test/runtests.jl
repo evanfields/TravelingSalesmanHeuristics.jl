@@ -1,4 +1,4 @@
-using TSPHeuristics
+using TravelingSalesmanHeuristics
 using Base.Test
 using Gadfly
 using Distances
