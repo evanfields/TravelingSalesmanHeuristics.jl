@@ -1,6 +1,5 @@
 using TravelingSalesmanHeuristics
 using Base.Test
-using Gadfly
 using Distances
 
 ###
@@ -27,15 +26,7 @@ function testpathvalidity(path, iscycle)
 	end
 end
 
-# function for human tests: visualize TSP output
-# not to be run as part of automated tests
-function visPlanarTSP(n = 10; extraArgs...)
-	pts = rand(2, n)
-	distMat = pairwise(Euclidean(), pts, pts)
-	path = nearestNeighbor(distMat; extraArgs...)
-	pts = pts[:,path]
-	plot(x = pts[1,:], y = pts[2,:], Geom.path, Geom.point)
-end
+
 
 ###
 # main tests
