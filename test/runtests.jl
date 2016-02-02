@@ -40,19 +40,22 @@ function test_nearest_neighbor()
 	for dm in distmats
 		n = size(dm, 1)
 		randstartcity = rand(1:n)
-		for firstcity in [Nullable{Int}(), Nullable(randstartcity)]
-			for do2opt in [true, false]
-				for closepath in [true, false]
-					for repetitive in [true, false]
-						path, cost = nearestNeighbor(dm, firstcity = firstcity, 
-											repetitive = repetitive,
-											do2opt = do2opt, closepath = closepath)
-						testpathvalidity(path, closepath)
-						@test cost > 0
-					end
-				end
-			end
-		end
+		# standard
+		path, cost = nearestNeighbor(dm)
+		@test cost > 0
+		testpathvalidity(path, true)
+		# no loop, 2 opt
+		path, cost = nearestNeighbor(dm, closepath = false)
+		@test cost > 0
+		testpathvalidity(path, false)
+		# no loop, no 2 opt
+		path, cost = nearestNeighbor(dm, closepath = false, do2opt = false)
+		@test cost > 0
+		testpathvalidity(path, false)
+		# fixed start, no loop
+		path, cost = nearestNeighbor(dm, closepath = false, firstcity = Nullable(randstartcity))
+		@test cost > 0
+		testpathvalidity(path, false)
 	end
 	
 	dm_bad = rand(3,2)
