@@ -74,7 +74,7 @@ function nearestNeighbor{T<:Real}(distmat::Matrix{T};
 	
 	# do swaps?
 	if do2opt
-		path = twoOpt(distmat, path)
+		path, _ = twoOpt(distmat, path)
 	end
 	
 	return (path, pathcost(distmat, path))
@@ -174,7 +174,7 @@ function twoOpt{T<:Real}(distmat::Matrix{T}, path::Vector{Int})
 		end
 	end
 	
-	return path
+	return path, pathcost(distmat, path)
 end
 
 

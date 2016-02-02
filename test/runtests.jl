@@ -72,3 +72,4 @@ end
 srand(47)
 test_nearest_neighbor()
 test_cheapest_insertion()
+println("Done testing.")
