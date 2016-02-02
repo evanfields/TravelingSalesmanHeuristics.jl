@@ -44,7 +44,7 @@ end
 # test nearest neighbor heuristic
 function test_nearest_neighbor()
 	distmats = cell(2)
-	distmats[1] = generate_planar_distmat(30)
+	distmats[1] = generate_planar_distmat(10)
 	distmats[2] = generate_planar_distmat(2)
 	
 	for dm in distmats
@@ -53,9 +53,13 @@ function test_nearest_neighbor()
 		for firstcity in [Nullable{Int}(), Nullable(randstartcity)]
 			for do2opt in [true, false]
 				for closepath in [true, false]
-					path = nearestNeighbor(dm, firstcity = firstcity, 
-										do2opt = do2opt, closepath = closepath)
-					testpathvalidity(path, closepath)
+					for repetitive in [true, false]
+						path, cost = nearestNeighbor(dm, firstcity = firstcity, 
+											repetitive = repetitive,
+											do2opt = do2opt, closepath = closepath)
+						testpathvalidity(path, closepath)
+						@test cost > 0
+					end
 				end
 			end
 		end

@@ -1,10 +1,23 @@
 module TravelingSalesmanHeuristics
 using Distances
 
-export nearestNeighbor
+export nearestNeighbor, twoOpt
 
+# Approximately solve a TSP using the nearest neighbor heuristic. You must pass a square matrix
+# distMat where distMat[i,j] represents the distance from city i to city j. The matrix needn't be
+# symmetric and possibly could contain negative values, though nonpositive values have not been tested.
+# Optional arguments:
+# firstCity: specifiese the city to begin the path on. An empty Nullable corresponds to random selection. 
+#	this argument is ignored if repetitive = true
+# repetitive: boolean for whether to try starting from all possible cities, keeping the best
+# closepath: boolean for whether to include the arc from the last city visited back to the first city in
+#	cost calculations. If true, the first city appears first and last in the path
+# do2opt: whether to refine the path found by 2-opt switches (corresponds to removing path crossings in
+#	the planar Euclidean case)
+# returns a tuple (path, pathCost) where path is a Vector{Int} corresponding to the order of cities visited
 function nearestNeighbor{T<:Real}(distMat::Matrix{T};
 							   firstcity::Nullable{Int} = Nullable{Int}(),
+							   repetitive = false,
 							   closepath = true,
 							   do2opt = true)
 	# must have a square matrix 
@@ -12,6 +25,24 @@ function nearestNeighbor{T<:Real}(distMat::Matrix{T};
 		error("Must pass a square distance matrix to nearestNeighbor")
 	end
 	numCities = size(distMat, 1)
+	
+	# if repetitive, we do all possible cities, and pick the best
+	if repetitive
+		function nnHelper(i)
+			nearestNeighbor(distMat,
+						  firstcity = Nullable(i),
+						  closepath = closepath,
+						  do2opt = do2opt,
+						  repetitive = false)
+		end
+		# do nn for each startin city
+		results = map(nnHelper, collect(1:numCities))
+		# pick out lowest cost
+		_, bestInd = findmin(map(res -> res[2], results))
+		return results[bestInd]
+	end
+	
+	# if not repetitive, we actually perform the heuristic for one starting city
 	
 	# put first city on path
 	path = Vector{Int}()
@@ -46,7 +77,7 @@ function nearestNeighbor{T<:Real}(distMat::Matrix{T};
 		path = twoOpt(distMat, path)
 	end
 	
-	return path
+	return (path, pathCost(distMat, path))
 end
 
 function pathCost(distMat, path)
@@ -93,14 +124,6 @@ function twoOpt{T<:Real}(distMat::Matrix{T}, path::Vector{Int})
 	end
 	
 	return path
-end
-
-function visPlanarTSP(n = 10; extraArgs...)
-	pts = rand(2, n)
-	distMat = pairwise(Euclidean(), pts, pts)
-	path = nearestNeighbor(distMat; extraArgs...)
-	pts = pts[:,path]
-	plot(x = pts[1,:], y = pts[2,:], Geom.path, Geom.point)
 end
 
 
