@@ -32,7 +32,6 @@ end
 # main tests
 ###
 
-# test nearest neighbor heuristic
 function test_nearest_neighbor()
 	distmats = cell(2)
 	distmats[1] = generate_planar_distmat(10)
@@ -60,9 +59,16 @@ function test_nearest_neighbor()
 	@test_throws ErrorException nearestNeighbor(dm_bad)
 end
 
+function test_cheapest_insertion()
+	dm = generate_planar_distmat(8)
+	path, cost = cheapest_insertion(dm)
+	@test cost > 0
+	testpathvalidity(path, true) # should be a closed path
+end
+
 ###
 # run
 ###
 srand(47)
 test_nearest_neighbor()
-	
+test_cheapest_insertion()
