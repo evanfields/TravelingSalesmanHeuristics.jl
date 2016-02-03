@@ -3,18 +3,27 @@ using Distances
 
 export nearestNeighbor, cheapest_insertion, twoOpt
 
-# Approximately solve a TSP using the nearest neighbor heuristic. You must pass a square matrix
-# distmat where distmat[i,j] represents the distance from city i to city j. The matrix needn't be
-# symmetric and possibly could contain negative values, though nonpositive values have not been tested.
-# Optional arguments:
-# firstCity: specifiese the city to begin the path on. An empty Nullable corresponds to random selection. 
-#	this argument is ignored if repetitive = true
-# repetitive: boolean for whether to try starting from all possible cities, keeping the best
-# closepath: boolean for whether to include the arc from the last city visited back to the first city in
-#	cost calculations. If true, the first city appears first and last in the path
-# do2opt: whether to refine the path found by 2-opt switches (corresponds to removing path crossings in
-#	the planar Euclidean case)
-# returns a tuple (path, pathcost) where path is a Vector{Int} corresponding to the order of cities visited
+"""
+Approximately solve a TSP using the nearest neighbor heuristic. You must pass a square matrix
+distmat where distmat[i,j] represents the distance from city i to city j. The matrix needn't be
+symmetric and possibly could contain negative values, though nonpositive values have not been tested.
+
+
+Optional arguments:
+
+firstCity: specifiese the city to begin the path on. An empty Nullable corresponds to random selection. 
+	this argument is ignored if repetitive = true
+	
+repetitive: boolean for whether to try starting from all possible cities, keeping the best
+
+closepath: boolean for whether to include the arc from the last city visited back to the first city in
+	cost calculations. If true, the first city appears first and last in the path
+	
+do2opt: whether to refine the path found by 2-opt switches (corresponds to removing path crossings in
+	the planar Euclidean case)
+	
+returns a tuple (path, pathcost) where path is a Vector{Int} corresponding to the order of cities visited
+"""
 function nearestNeighbor{T<:Real}(distmat::Matrix{T};
 							   firstcity::Nullable{Int} = Nullable{Int}(),
 							   repetitive = false,
@@ -80,11 +89,13 @@ function nearestNeighbor{T<:Real}(distmat::Matrix{T};
 	return (path, pathcost(distmat, path))
 end
 
-# given a distance matrix and an initial path, complete the tour by
-# repeatedly doing the cheapest insertion
-# insertions are always in the interior of the current path so this can also be used for
-# non-closed TSP paths
-# currently implemented by a naive n^3 algorithm
+"""
+Given a distance matrix and an initial path, complete the tour by
+repeatedly doing the cheapest insertion.
+Insertions are always in the interior of the current path so this heuristic can also be used for
+non-closed TSP paths.
+Currently the implementation is a naive n^3 algorithm.
+"""
 function cheapest_insertion{T<:Real}(distmat::Matrix{T}, initpath::Vector{Int})
 	if size(distmat, 1) != size(distmat, 2)
 		error("Distance matrix passed to cheapest_insertion must be square.")
@@ -124,11 +135,43 @@ function cheapest_insertion{T<:Real}(distmat::Matrix{T}, initpath::Vector{Int})
 	
 	return (path, pathcost(distmat, path))
 end
-# cheapest insertion with random the self-loop on a random city as the initial path
-function cheapest_insertion{T<:Real}(distmat::Matrix{T})
+"""
+Cheapest insertion with a self-loop as the initial path.
+The first city can be selected randomly (specified by an empty Nullable),
+specified by the user, or all cities can be tried repetitively.
+"""
+function cheapest_insertion{T<:Real}(distmat::Matrix{T};
+								 firstcity::Nullable{Int} = Nullable{Int}(),
+							     repetitive::Bool = false,
+								 do2opt::Bool = true)
+	#infer size
 	n = size(distmat, 1)
-	firstcity = rand(1:n)
-	return cheapest_insertion(distmat, [firstcity, firstcity])
+
+	# if repetitive, we do all possible cities, and pick the best
+	if repetitive
+		function ciHelper(i)
+			cheapest_insertion(distmat,
+						  firstcity = Nullable(i),
+						  do2opt = do2opt,
+						  repetitive = false)
+		end
+		# do cheapest insertion for each starting city
+		results = map(ciHelper, collect(1:n))
+		# pick out lowest cost
+		_, bestInd = findmin(map(res -> res[2], results))
+		return results[bestInd]
+	end
+	
+	# okay, we're not repetitive. Do we pick first city at random?
+	firstcity = isnull(firstcity) ? rand(1:n) : get(firstcity)
+	path, cost = cheapest_insertion(distmat, [firstcity, firstcity])
+	
+	# user may have asked for 2-opt refinement
+	if do2opt
+		path, cost = twoOpt(distmat, path)
+	end
+	
+	return path, cost
 end
 
 function pathcost(distmat, path)
@@ -140,7 +183,7 @@ function pathcost(distmat, path)
 end
 
 
-# perform 2-opt reversals until doing so does not improve the path cost
+"perform 2-opt reversals until doing so does not improve the path cost"
 function twoOpt{T<:Real}(distmat::Matrix{T}, path::Vector{Int})
 	# size checks
 	n = length(path)

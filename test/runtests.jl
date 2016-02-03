@@ -67,10 +67,19 @@ function test_nearest_neighbor()
 end
 
 function test_cheapest_insertion()
+	# default random start
 	dm = generate_planar_distmat(8)
 	path, cost = cheapest_insertion(dm)
 	@test cost > 0
 	testpathvalidity(path, true) # should be a closed path
+	# repetitive start
+	path, cost = cheapest_insertion(dm, repetitive = true)
+	@test cost > 0
+	testpathvalidity(path, true)
+	
+	# bad input
+	dmbad = rand(2,3)
+	@test_throws ErrorException cheapest_insertion(dmbad)
 end
 
 ###
