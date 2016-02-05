@@ -1,7 +1,23 @@
 module TravelingSalesmanHeuristics
-using Distances
+using Graphs
 
-export nearestNeighbor, cheapest_insertion, twoOpt
+export solve_tsp, lowerbound, nearestNeighbor, cheapest_insertion, twoOpt
+
+# one liner to to get TSP solutions
+# is quick but not thorough
+function solve_tsp{T<:Real}(distmat::Matrix{T})
+	p1, c1 = nearestNeighbor(distmat)
+	p2, c2 = cheapest_insertion(distmat)
+	if c1 < c2
+		return p1, c1
+	else
+		return p2, c2
+	end
+end
+
+###
+# path generation heuristics
+###
 
 """
 Approximately solve a TSP using the nearest neighbor heuristic. You must pass a square matrix
@@ -174,14 +190,46 @@ function cheapest_insertion{T<:Real}(distmat::Matrix{T};
 	return path, cost
 end
 
-function pathcost(distmat, path)
+###
+# helpers
+###
+
+# helper for readable one-line path costs
+function pathcost(distmat, path::Vector{Int})
 	cost = 0
 	for i in 1:(length(path) - 1)
 		cost += distmat[path[i], path[i+1]]
 	end
 	return cost
 end
-
+# helper to get min spanning trees
+# returns a (n-1) long Vector of Tuple{Int, Int} where each tuple is an edge in the MST
+# and the total weight of the tree
+function minspantree(distmat)
+	if size(distmat, 1) != size(distmat, 2)
+		error("Distance matrix passed to minspantree must be square.")
+	end
+	n = size(distmat, 1)
+	numEdge = convert(Int, n * (n-1)) # not / 2 since directed graph
+	
+	# construct graph and list of edge weights
+	g = simple_complete_graph(n)
+	eWeights = zeros(numEdge)
+	
+	for i in eachindex(edges(g))
+		e = edges(g)[i]
+		eWeights[i] = distmat[source(e), target(e)]
+	end
+	
+	(treeEdges, treeWeights) = kruskal_minimum_spantree(g, eWeights)
+	
+	return (map(e -> (source(e), target(e)), treeEdges),
+		    sum(treeWeights))
+end
+	
+###
+# path improvement heuristics
+###
 
 "perform 2-opt reversals until doing so does not improve the path cost"
 function twoOpt{T<:Real}(distmat::Matrix{T}, path::Vector{Int})
@@ -220,5 +268,56 @@ function twoOpt{T<:Real}(distmat::Matrix{T}, path::Vector{Int})
 	return path, pathcost(distmat, path)
 end
 
+### 
+# bounds
+###
+
+# I implement several simple but super loose bounds
+# These only apply to closed tours
+
+# the cost of a tour must be >= the sum over all vertices of
+# the cost of the cheapest edge leaving that vertex
+# likewise for the cheapest edge entering that vertex
+# since we must go to and leave each vertex
+function vertwise_bound(distmat)
+	leaving = sum(minimum(distmat, 2))
+	entering = sum(minimum(distmat, 1))
+	return maximum([leaving, entering])
+end
+
+# a simplified/looser version of Held-Karp bounds
+# any tour is a spanning tree on (n-1) verts plus two edges
+# from the left out vert
+# so the maximum over all verts (as the left out vert) of 
+# MST cost on remaining vertices plus 2 cheapest edges from
+# the left out vert is a lower bound
+function hkinspired_bound(distmat)
+	n = size(distmat, 1)
+	if size(distmat, 2) != n
+		error("Must pass square distance matrix to hkinspired_bound")
+	end
+	function del_vert(v)
+		keep = [1:(v-1) ; (v+1):n]
+		return distmat[keep, keep]
+	end
+	
+	function cost_leave_out(v)
+		dmprime = del_vert(v)
+		_, c = minspantree(dmprime)
+		c += minimum(distmat[v,:])
+		c += minimum(distmat[:,v])
+		return c
+	end
+	
+	return maximum(map(cost_leave_out, 1:n))
+end
+
+# best lower bound we have
+function lowerbound(distmat)
+	return maximum([
+			vertwise_bound(distmat),
+			hkinspired_bound(distmat)
+			])
+end
 
 end # module

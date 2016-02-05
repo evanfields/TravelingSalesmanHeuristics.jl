@@ -82,10 +82,22 @@ function test_cheapest_insertion()
 	@test_throws ErrorException cheapest_insertion(dmbad)
 end
 
+function test_bounds()
+	dm = generate_planar_distmat(2)
+	path, cost = solve_tsp(dm)
+	lb = lowerbound(dm)
+	@test lb <= cost
+	dm = generate_planar_distmat(30)
+	path, cost = solve_tsp(dm)
+	lb = lowerbound(dm)
+	@test lb <= cost
+end
+
 ###
 # run
 ###
 srand(47)
 test_nearest_neighbor()
 test_cheapest_insertion()
+test_bounds()
 println("Done testing.")
