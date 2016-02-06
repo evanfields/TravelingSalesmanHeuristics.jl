@@ -25,6 +25,7 @@ end
 function compareHeuristics(n = 20)
 	pts = rand(2, n)
 	dm = pairwise(Euclidean(), pts, pts)
+	println("Simple lower bound: $(lowerbound(dm))")
 	singlenn_no2opt = nearestNeighbor(dm, do2opt = false)
 	println("Single start nearest neighbor without 2-opt has cost $(singlenn_no2opt[2])")
 	singlenn_2opt = nearestNeighbor(dm, do2opt = true)

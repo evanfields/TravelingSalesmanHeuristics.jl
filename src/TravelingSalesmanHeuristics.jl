@@ -3,8 +3,13 @@ using Graphs
 
 export solve_tsp, lowerbound, nearestNeighbor, cheapest_insertion, twoOpt
 
-# one liner to to get TSP solutions
-# is quick but not thorough
+"""
+.. solve_tsp(distmat) ..
+
+One-line interface to approximately solving a TSP by specifying a distance matrix.
+This method provides fairly quick solutions but no extra control. For more fine-grained
+control over the heuristics used, try nearestNeighbor or cheapest_insertion.
+"""
 function solve_tsp{T<:Real}(distmat::Matrix{T})
 	p1, c1 = nearestNeighbor(distmat)
 	p2, c2 = cheapest_insertion(distmat)
@@ -27,16 +32,16 @@ symmetric and possibly could contain negative values, though nonpositive values 
 
 Optional arguments:
 
-firstCity: specifiese the city to begin the path on. An empty Nullable corresponds to random selection. 
-	this argument is ignored if repetitive = true
+firstCity: specifies the city to begin the path on. An empty Nullable corresponds to random selection. 
+	This argument is ignored if repetitive = true. Defaults to an empty Nullable{Int}
 	
-repetitive: boolean for whether to try starting from all possible cities, keeping the best
+repetitive: boolean for whether to try starting from all possible cities, keeping the best. Defaults to false.
 
 closepath: boolean for whether to include the arc from the last city visited back to the first city in
-	cost calculations. If true, the first city appears first and last in the path
+	cost calculations. If true, the first city appears first and last in the path. Defaults to true.
 	
 do2opt: whether to refine the path found by 2-opt switches (corresponds to removing path crossings in
-	the planar Euclidean case)
+	the planar Euclidean case). Defaults to true.
 	
 returns a tuple (path, pathcost) where path is a Vector{Int} corresponding to the order of cities visited
 """
@@ -106,8 +111,12 @@ function nearestNeighbor{T<:Real}(distmat::Matrix{T};
 end
 
 """
+.. cheapest_insertion(distmat, initpath) ..
+
+
 Given a distance matrix and an initial path, complete the tour by
-repeatedly doing the cheapest insertion.
+repeatedly doing the cheapest insertion. The initial path must have length at least 2, but can be
+simply [i, i] for some city index i which corresponds to starting with a self-loop at city i.
 Insertions are always in the interior of the current path so this heuristic can also be used for
 non-closed TSP paths.
 Currently the implementation is a naive n^3 algorithm.
@@ -152,9 +161,22 @@ function cheapest_insertion{T<:Real}(distmat::Matrix{T}, initpath::Vector{Int})
 	return (path, pathcost(distmat, path))
 end
 """
+.. cheapest_insertion(distmat; ...) ..
+
+
 Cheapest insertion with a self-loop as the initial path.
-The first city can be selected randomly (specified by an empty Nullable),
-specified by the user, or all cities can be tried repetitively.
+distmat must be a square real matrix. Non-symmetric distance matrices should work. Negative
+distances have not been tested but may also work.
+
+Optional arguments:
+
+firstcity: Specifies which city should have a self loop as the initial path. Nullable(i) for 
+city i or an empty Nullable{Int} for random selection. This argument is ignored if
+repetitive = true. Defaults to random selection.
+
+repetitive: boolean for whether to try starting from all possible cities, keeping the best. Defaults to false.
+
+do2opt: boolean for whether to improve the paths found by 2-opt swaps. Defaults to true.
 """
 function cheapest_insertion{T<:Real}(distmat::Matrix{T};
 								 firstcity::Nullable{Int} = Nullable{Int}(),
@@ -280,8 +302,12 @@ end
 # likewise for the cheapest edge entering that vertex
 # since we must go to and leave each vertex
 function vertwise_bound(distmat)
-	leaving = sum(minimum(distmat, 2))
-	entering = sum(minimum(distmat, 1))
+	# the simple code below would tend to pick out the 0 costs on the diagonal
+	# so make a doctored copy of the distance matrix with high costs on the diagonal
+	m = maximum(distmat)
+	distmat_nodiag = distmat + m * eye(distmat)
+	leaving = sum(minimum(distmat_nodiag, 2))
+	entering = sum(minimum(distmat_nodiag, 1))
 	return maximum([leaving, entering])
 end
 
@@ -313,6 +339,12 @@ function hkinspired_bound(distmat)
 end
 
 # best lower bound we have
+"""
+Lower bound the cost of the optimal TSP tour. At present, the bounds considered
+are a simple bound based on the minimum cost of entering and exiting each city and
+a slightly better bound inspired by the Held-Karp bounds; note that the implementation
+here is simpler and less tight than proper HK bounds.
+"""
 function lowerbound(distmat)
 	return maximum([
 			vertwise_bound(distmat),
