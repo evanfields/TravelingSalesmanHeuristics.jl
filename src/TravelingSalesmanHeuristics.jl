@@ -217,13 +217,14 @@ end
 ###
 
 # helper for readable one-line path costs
-function pathcost(distmat, path::Vector{Int})
-	cost = 0
+function pathcost{T<:Real}(distmat::Matrix{T}, path::Vector{Int})
+	cost = zero(T)
 	for i in 1:(length(path) - 1)
-		cost += distmat[path[i], path[i+1]]
+		@inbounds cost += distmat[path[i], path[i+1]]
 	end
 	return cost
 end
+
 # helper to get min spanning trees
 # returns a (n-1) long Vector of Tuple{Int, Int} where each tuple is an edge in the MST
 # and the total weight of the tree
