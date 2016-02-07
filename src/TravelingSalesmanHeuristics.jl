@@ -1,7 +1,7 @@
 module TravelingSalesmanHeuristics
 using Graphs
 
-export solve_tsp, lowerbound, nearest_neighbor, cheapest_insertion, twoOpt
+export solve_tsp, lowerbound, nearest_neighbor, cheapest_insertion, two_opt
 
 """
 .. solve_tsp(distmat) ..
@@ -104,7 +104,7 @@ function nearest_neighbor{T<:Real}(distmat::Matrix{T};
 	
 	# do swaps?
 	if do2opt
-		path, _ = twoOpt(distmat, path)
+		path, _ = two_opt(distmat, path)
 	end
 	
 	return (path, pathcost(distmat, path))
@@ -206,7 +206,7 @@ function cheapest_insertion{T<:Real}(distmat::Matrix{T};
 	
 	# user may have asked for 2-opt refinement
 	if do2opt
-		path, cost = twoOpt(distmat, path)
+		path, cost = two_opt(distmat, path)
 	end
 	
 	return path, cost
@@ -285,11 +285,11 @@ end
 ###
 
 "perform 2-opt reversals until doing so does not improve the path cost"
-function twoOpt{T<:Real}(distmat::Matrix{T}, path::Vector{Int})
+function two_opt{T<:Real}(distmat::Matrix{T}, path::Vector{Int})
 	# size checks
 	n = length(path)
 	if size(distmat, 1) != size(distmat, 2)
-		error("Distance matrix passed to twoOpt must be square.")
+		error("Distance matrix passed to two_opt must be square.")
 	end
 	
 	# main loop
