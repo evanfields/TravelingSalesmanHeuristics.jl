@@ -1,17 +1,17 @@
 module TravelingSalesmanHeuristics
 using Graphs
 
-export solve_tsp, lowerbound, nearestNeighbor, cheapest_insertion, twoOpt
+export solve_tsp, lowerbound, nearest_neighbor, cheapest_insertion, twoOpt
 
 """
 .. solve_tsp(distmat) ..
 
 One-line interface to approximately solving a TSP by specifying a distance matrix.
 This method provides fairly quick solutions but no extra control. For more fine-grained
-control over the heuristics used, try nearestNeighbor or cheapest_insertion.
+control over the heuristics used, try nearest_neighbor or cheapest_insertion.
 """
 function solve_tsp{T<:Real}(distmat::Matrix{T})
-	p1, c1 = nearestNeighbor(distmat)
+	p1, c1 = nearest_neighbor(distmat)
 	p2, c2 = cheapest_insertion(distmat)
 	if c1 < c2
 		return p1, c1
@@ -45,21 +45,21 @@ do2opt: whether to refine the path found by 2-opt switches (corresponds to remov
 	
 returns a tuple (path, pathcost) where path is a Vector{Int} corresponding to the order of cities visited
 """
-function nearestNeighbor{T<:Real}(distmat::Matrix{T};
+function nearest_neighbor{T<:Real}(distmat::Matrix{T};
 							   firstcity::Nullable{Int} = Nullable{Int}(),
 							   repetitive = false,
 							   closepath = true,
 							   do2opt = true)
 	# must have a square matrix 
 	if size(distmat, 1) != size(distmat, 2)
-		error("Must pass a square distance matrix to nearestNeighbor")
+		error("Must pass a square distance matrix to nearest_neighbor")
 	end
 	numCities = size(distmat, 1)
 	
 	# if repetitive, we do all possible cities, and pick the best
 	if repetitive
 		function nnHelper(i)
-			nearestNeighbor(distmat,
+			nearest_neighbor(distmat,
 						  firstcity = Nullable(i),
 						  closepath = closepath,
 						  do2opt = do2opt,

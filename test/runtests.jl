@@ -41,29 +41,29 @@ function test_nearest_neighbor()
 		n = size(dm, 1)
 		randstartcity = rand(1:n)
 		# standard
-		path, cost = nearestNeighbor(dm)
+		path, cost = nearest_neighbor(dm)
 		@test cost > 0
 		testpathvalidity(path, true)
 		# repetitive
-		path, cost = nearestNeighbor(dm, repetitive = true)
+		path, cost = nearest_neighbor(dm, repetitive = true)
 		@test cost > 0
 		testpathvalidity(path, true)
 		# no loop, 2 opt
-		path, cost = nearestNeighbor(dm, closepath = false)
+		path, cost = nearest_neighbor(dm, closepath = false)
 		@test cost > 0
 		testpathvalidity(path, false)
 		# no loop, no 2 opt
-		path, cost = nearestNeighbor(dm, closepath = false, do2opt = false)
+		path, cost = nearest_neighbor(dm, closepath = false, do2opt = false)
 		@test cost > 0
 		testpathvalidity(path, false)
 		# fixed start, no loop
-		path, cost = nearestNeighbor(dm, closepath = false, firstcity = Nullable(randstartcity))
+		path, cost = nearest_neighbor(dm, closepath = false, firstcity = Nullable(randstartcity))
 		@test cost > 0
 		testpathvalidity(path, false)
 	end
 	
 	dm_bad = rand(3,2)
-	@test_throws ErrorException nearestNeighbor(dm_bad)
+	@test_throws ErrorException nearest_neighbor(dm_bad)
 end
 
 function test_cheapest_insertion()
