@@ -217,10 +217,40 @@ end
 ###
 
 # helper for readable one-line path costs
-function pathcost{T<:Real}(distmat::Matrix{T}, path::Vector{Int})
+# optionally specify the bounds for the subpath we want the cost of
+# defaults to the whole path
+# but when calculating reversed path costs can help to have subpath costs
+function pathcost{T<:Real}(distmat::Matrix{T}, path::Vector{Int}, lb::Int = 1, ub::Int = length(path))
 	cost = zero(T)
-	for i in 1:(length(path) - 1)
+	for i in lb:(ub - 1)
 		@inbounds cost += distmat[path[i], path[i+1]]
+	end
+	return cost
+end
+# calculate the cost of reversing part of a path
+# cost of walking along the entire path specified but reversing the sequence from revLow to revHigh, inclusive
+function pathcost_rev{T<:Real}(distmat::Matrix{T}, path::Vector{Int}, revLow::Int, revHigh::Int)
+	cost = zero(T)
+	# if there's an initial unreversed section
+	if revLow > 1
+		for i in 1:(revLow - 2)
+			@inbounds cost += distmat[path[i], path[i+1]]
+		end
+		# from end of unreversed section to beginning of reversed section
+		@inbounds cost += distmat[path[revLow - 1], path[revHigh]]
+	end
+	# main reverse section
+	for i in revHigh:-1:(revLow + 1)
+		@inbounds cost += distmat[path[i], path[i-1]]
+	end
+	# if there's an unreversed section after the reversed bit
+	n = length(path)
+	if revHigh < length(path)
+		# from end of reversed section back to regular
+		@inbounds cost += distmat[path[revLow], path[revHigh + 1]]
+		for i in (revHigh + 1):(n-1)
+			@inbounds cost += distmat[path[i], path[i+1]]
+		end
 	end
 	return cost
 end
@@ -276,18 +306,16 @@ function twoOpt{T<:Real}(distmat::Matrix{T}, path::Vector{Int})
 	while prevCost > pathcost(distmat, path)
 		prevCost = curCost
 		# we can't change the first 
-		for i in switchLow:(n-1)
+		for i in switchLow:(switchHigh-1)
 			for j in (i+1):switchHigh
-				altPath = reverse(path, i, j)
-				altCost = pathcost(distmat, altPath)
+				altCost = pathcost_rev(distmat, path, i, j)
 				if altCost < curCost
-					path = altPath
 					curCost = altCost
+					reverse!(path, i, j)
 				end
 			end
 		end
 	end
-	
 	return path, pathcost(distmat, path)
 end
 

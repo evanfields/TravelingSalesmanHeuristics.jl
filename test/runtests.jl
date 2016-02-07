@@ -93,6 +93,19 @@ function test_bounds()
 	@test lb <= cost
 end
 
+function test_path_costs()
+	dm = [1 2 3; 4 5 6; 7 8 9]
+	p1 = [1, 2, 3, 1]
+	@test TravelingSalesmanHeuristics.pathcost(dm, p1) == 2 + 6 + 7
+	# various reverse indices to test
+	revs = [(1,4), (2,3), (2,4), (3,3)]
+	for rev in revs
+		path_rev = reverse(p1, rev[1], rev[2])
+		@test TravelingSalesmanHeuristics.pathcost(dm, path_rev) == 
+			  TravelingSalesmanHeuristics.pathcost_rev(dm, p1, rev[1], rev[2])
+	end
+end
+
 ###
 # run
 ###
@@ -100,4 +113,5 @@ srand(47)
 test_nearest_neighbor()
 test_cheapest_insertion()
 test_bounds()
+test_path_costs()
 println("Done testing.")
