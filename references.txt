@@ -1,2 +1,3 @@
 http://www.seas.gwu.edu/~simhaweb/champalg/tsp/tsp.html
 http://davidsjohnson.net/papers/TSPchapter.pdf
+http://people.idsia.ch/~luca/acs-bio97.pdf
