@@ -3,7 +3,7 @@
 """
 .. simulated_annealing(distmat; ...) ..
 
-Use a simulated annealing strategy to return a closed tour. 
+Use a simulated annealing strategy to return a closed tour.
 
 Optional arguments:
 
@@ -19,20 +19,20 @@ Optional arguments:
 function simulated_annealing{T <: Real}(distmat::Matrix{T}; steps = 10*length(distmat),
 										num_starts = 1,
 										init_temp = 5000, final_temp = 1e-5)
-										
+
 	# cooling rate: we multiply by a constant mult each step
 	cool_rate = (final_temp / init_temp)^(1 / (steps - 1))
-	temp = init_temp / cool_rate # divide by cool_rate so when we first multiply we get init_temp
-	
+
 	# do SA with a single starting location
 	function sahelper()
+		temp = init_temp / cool_rate # divide by cool_rate so when we first multiply we get init_temp
 		n = size(distmat, 1)
 		path = randpath(n)
 		cost_cur = pathcost(distmat, path)
-		
+
 		for i in 1:steps
-			temp /= cool_rate
-			
+			temp *= cool_rate
+
 			# take a step
 			# keep first and last cities fixed
 			first, last = rand(2:n), rand(2:n)
@@ -47,10 +47,10 @@ function simulated_annealing{T <: Real}(distmat::Matrix{T}; steps = 10*length(di
 				cost_cur = cost_other
 			end
 		end
-		
+
 		return path, cost_cur
 	end
-	
+
 	path, cost = sahelper()
 	for _ in 2:num_starts
 		otherpath, othercost = sahelper()
@@ -59,7 +59,7 @@ function simulated_annealing{T <: Real}(distmat::Matrix{T}; steps = 10*length(di
 			path = otherpath
 		end
 	end
-	
+
 	return path, cost
 end
 
