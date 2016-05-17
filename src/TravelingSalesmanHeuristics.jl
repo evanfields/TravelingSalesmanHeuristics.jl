@@ -218,7 +218,7 @@ end
 
 # make sure a passed distance matrix is a square
 function check_square(m, msg)
-	if size(n, 1) != size(n, 2)
+	if size(m, 1) != size(m, 2)
 		error(msg)
 	end
 end
