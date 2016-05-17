@@ -90,7 +90,7 @@ function test_simulated_annealing()
 	testpathvalidity(path, true) # closed path
 	# multi-start
 	dm = generate_planar_distmat(8)
-	path, cost = simulated_annealing(dm, num_start = 3)
+	path, cost = simulated_annealing(dm, num_starts = 3)
 	@test cost > 0
 	testpathvalidity(path, true) # also closed
 end
