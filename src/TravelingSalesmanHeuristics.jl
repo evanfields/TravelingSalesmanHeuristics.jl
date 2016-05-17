@@ -53,9 +53,8 @@ function nearest_neighbor{T<:Real}(distmat::Matrix{T};
 							   closepath = true,
 							   do2opt = true)
 	# must have a square matrix 
-	if size(distmat, 1) != size(distmat, 2)
-		error("Must pass a square distance matrix to nearest_neighbor")
-	end
+	check_square(distmat, "Must pass a square distance matrix to nearest_neighbor")
+	
 	numCities = size(distmat, 1)
 	
 	# if repetitive, we do all possible cities, and pick the best
@@ -124,9 +123,8 @@ non-closed TSP paths.
 Currently the implementation is a naive n^3 algorithm.
 """
 function cheapest_insertion{T<:Real}(distmat::Matrix{T}, initpath::Vector{Int})
-	if size(distmat, 1) != size(distmat, 2)
-		error("Distance matrix passed to cheapest_insertion must be square.")
-	end
+	check_square(distmat, "Distance matrix passed to cheapest_insertion must be square.")
+	
 	n = size(distmat, 1)
 	path = copy(initpath)
 	
@@ -217,6 +215,13 @@ end
 ###
 # helpers
 ###
+
+# make sure a passed distance matrix is a square
+function check_square(m, msg)
+	if size(n, 1) != size(n, 2)
+		error(msg)
+	end
+end
 
 # helper for readable one-line path costs
 # optionally specify the bounds for the subpath we want the cost of

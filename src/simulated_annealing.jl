@@ -20,6 +20,9 @@ function simulated_annealing{T <: Real}(distmat::Matrix{T}; steps = 10*length(di
 										num_starts = 1,
 										init_temp = 5000, final_temp = 1e-5)
 
+	# check inputs
+	check_square(distmat, "Must pass a square distance matrix to simulated_annealing.")
+	
 	# cooling rate: we multiply by a constant mult each step
 	cool_rate = (final_temp / init_temp)^(1 / (steps - 1))
 
