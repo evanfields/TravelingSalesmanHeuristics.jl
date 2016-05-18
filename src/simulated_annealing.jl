@@ -3,22 +3,30 @@
 """
 .. simulated_annealing(distmat; ...) ..
 
-Use a simulated annealing strategy to return a closed tour.
+Use a simulated annealing strategy to return a closed tour. The temperature
+decays exponentially from init_temp to final_temp.
 
 Optional arguments:
 
-- steps: number of steps to take; defaults to 10n^2 where n is number of cities
+- steps: number of steps to take; defaults to 50n^2 where n is number of cities
 
 - num_starts: number of times to run the simulated annealing algorithm, each time
 	starting with a random path. Defaults to 1.
 
-- cooling_schedule: a function mapping the index of a step to a temperature. Probably
-	this function should approach 1 as input gets large; this corresponds to always
-	accepting moves which improve the objective function.
+- init_temp: initial temperature which controls initial chance of accepting an
+	inferior tour.
+
+- final_temp: final temperature which controls final chance of accepting an
+	inferior tour; lower values roughly correspond to a longer period of 2-opt.
+
+- init_path: path to start the annealing from. A Nullable{Vector{Int}}. An empty
+	Nullable corresponds to picking a random path; if the Nullable contains a value
+	then this path will be used. Defaults to a random path.
 """
-function simulated_annealing{T <: Real}(distmat::Matrix{T}; steps = 10*length(distmat),
+function simulated_annealing{T <: Real}(distmat::Matrix{T}; steps = 50*length(distmat),
 										num_starts = 1,
-										init_temp = 5000, final_temp = 1e-5)
+										init_temp = exp(8), final_temp = exp(-6.5),
+										init_path::Nullable{Vector{Int}} = Nullable{Vector{Int}}())
 
 	# check inputs
 	check_square(distmat, "Must pass a square distance matrix to simulated_annealing.")
@@ -30,7 +38,7 @@ function simulated_annealing{T <: Real}(distmat::Matrix{T}; steps = 10*length(di
 	function sahelper()
 		temp = init_temp / cool_rate # divide by cool_rate so when we first multiply we get init_temp
 		n = size(distmat, 1)
-		path = randpath(n)
+		path = isnull(init_path) ? randpath(n) : copy(get(init_path))
 		cost_cur = pathcost(distmat, path)
 
 		for i in 1:steps
