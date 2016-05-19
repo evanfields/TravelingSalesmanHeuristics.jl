@@ -82,6 +82,26 @@ function test_cheapest_insertion()
 	@test_throws ErrorException cheapest_insertion(dmbad)
 end
 
+function test_simulated_annealing()
+	dm = generate_planar_distmat(14)
+	# single start
+	path, cost = simulated_annealing(dm)
+	@test cost > 0
+	testpathvalidity(path, true) # closed path
+	# multi-start
+	dm = generate_planar_distmat(8)
+	path, cost = simulated_annealing(dm, num_starts = 3)
+	@test cost > 0
+	testpathvalidity(path, true) # also closed
+	# given init path
+	init_path = collect(1:8)
+	push!(init_path, 1)
+	reverse!(init_path, 2, 6)
+	path, cost = simulated_annealing(dm; init_path = Nullable(init_path))
+	@test cost > lowerbound(dm)
+	testpathvalidity(path, true) # still closed
+end
+
 function test_bounds()
 	dm = generate_planar_distmat(2)
 	path, cost = solve_tsp(dm)
@@ -112,6 +132,7 @@ end
 srand(47)
 test_nearest_neighbor()
 test_cheapest_insertion()
+test_simulated_annealing()
 test_bounds()
 test_path_costs()
 println("Done testing.")
