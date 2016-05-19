@@ -1,4 +1,4 @@
-# TSPHeuristics
+# TravelingSalesmanHeuristics
 
 [![Build Status](https://travis-ci.org/evanfields/TravelingSalesmanHeuristics.jl.svg?branch=master)](https://travis-ci.org/evanfields/TravelingSalesmanHeuristics.jl)
 [![codecov.io](https://codecov.io/github/evanfields/TravelingSalesmanHeuristics.jl/coverage.svg?branch=master)](https://codecov.io/github/evanfields/TravelingSalesmanHeuristics.jl?branch=master)
@@ -6,7 +6,13 @@
 ### Overview ###
 `TravelingSalesmanHeuristics` is a Julia package containing simple heuristics for the [traveling salesman problem](https://en.wikipedia.org/wiki/Travelling_salesman_problem). 
 
-As of 2016-2-7, `TravelingSalesmanHeuristics` implements the nearest neighbor and cheapest insertion strategies for path generation and the 2-opt strategy for path refinement. A simple spanning tree type lower bound is also implemented.
+As of 2016-5-19, `TravelingSalesmanHeuristics` implements the nearest neighbor and cheapest insertion strategies for path generation, the 2-opt strategy for path refinement, and a simulated annealing heuristic which can be used for path generation or refinement. A simple spanning tree type lower bound is also implemented.
+
+The documentation consists of this readme and detailed inline documentation for the exported functions `solve_tsp`, `nearest_neighbor`, `cheapest_insertion`, `two_opt`, and `simulated_annealing`. After installing the package, this inline documentation can be accessed at a Julia REPL, e.g.
+```
+using TravelingSalesmanHeuristics
+?nearest_neighbor
+```
 
 This package is both my first Julia package and my first effort in open source software, so I welcome any contributions, suggestions, feature requests, pull requests, criticisms, etc.
 
@@ -19,6 +25,9 @@ A word of warning: the heuristics implemented are
 * heuristics, meaning you won't get any optimality guarantees and except on very small instances are unlikely to find the optimal tour;
 * general purpose, meaning they do not take advantage of any problem specific structure;
 * simple and (hopefully) readable but not terribly high performance, meaning you may have trouble with large instances. In particular the 2-opt path refinement strategy slows down noticeably when there are >400 cities.
+
+### Installation ###
+Install the package by typing `Pkg.add("TravelingSalesmanHeuristics")` into a Julia REPL. Load it with `using TravelingSalesmanHeuristics`.
 
 ### How to use ###
 All problems are specified through a square distance matrix `D` where `D[i,j]` represents the cost of traveling from the `i`-th to the `j`-th city. Your distance matrix need not be symmetric and could probably even contain negative values, though I make no guarantee about behavior when using negative values.
@@ -43,7 +52,7 @@ julia> path, pathcost = solve_tsp(distmat)
 ```
 Notice that the path starts and ends at city 6 and our cost is about 3.36.
 
-For more detailed control over how your TSP instance is solved, use the `nearest_neighbor`, `cheapest_insertion`, or `two_opt` functions. For example, we might want to solve our TSP by doing cheapest insertion with a loop on city 1 as our initial path and then refine with 2-opt:
+For more detailed control over how your TSP instance is solved, use the `nearest_neighbor`, `cheapest_insertion`, `simulated_annealing`, or `two_opt` functions. For example, we might want to solve our TSP by doing cheapest insertion with a loop on city 1 as our initial path and then refine with 2-opt:
 
 ```
 julia> path, pathcost = cheapest_insertion(distmat; firstcity = Nullable(1), do2opt = true)
