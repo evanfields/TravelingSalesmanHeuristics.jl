@@ -368,11 +368,14 @@ function hkinspired_bound(distmat)
 		return distmat[keep, keep]
 	end
 	
+	# make sure min(distmat[v,:]) doesn't pick diagonal elements
+	m = maximum(distmat)
+	distmat_nodiag = distmat + m * eye(distmat)
 	function cost_leave_out(v)
 		dmprime = del_vert(v)
 		_, c = minspantree(dmprime)
-		c += minimum(distmat[v,:])
-		c += minimum(distmat[:,v])
+		c += minimum(distmat_nodiag[v,:])
+		c += minimum(distmat_nodiag[:,v])
 		return c
 	end
 	
