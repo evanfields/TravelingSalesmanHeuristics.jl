@@ -33,7 +33,7 @@ end
 ###
 
 function test_nearest_neighbor()
-	distmats = cell(2)
+	distmats = Array{Any}(2)
 	distmats[1] = generate_planar_distmat(10)
 	distmats[2] = generate_planar_distmat(2)
 	
