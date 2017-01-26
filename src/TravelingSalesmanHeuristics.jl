@@ -1,5 +1,7 @@
 module TravelingSalesmanHeuristics
 
+using Compat
+
 include("simulated_annealing.jl")
 include("lowerbounds.jl")
 
