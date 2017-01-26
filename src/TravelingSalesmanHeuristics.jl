@@ -1,6 +1,6 @@
 module TravelingSalesmanHeuristics
 
-using Compat
+using Compat: view
 
 include("simulated_annealing.jl")
 include("lowerbounds.jl")
