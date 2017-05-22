@@ -214,15 +214,56 @@ function cheapest_insertion{T<:Real}(distmat::Matrix{T};
 	return path, cost
 end
 
+function farthest_insertion{T<:Real}(distmat::Matrix{T}, firstcity::Int)
+	n = check_square(distmat, "Must pass square distance matrix to farthest_insertion.")
+	path = Int[firstcity, firstcity]
+	sizehint!(path, n)
+	dists_to_tour = (distmat[firstcity, :] + distmat[:, firstcity]) / 2
+	
+	while length(path) < n + 1
+		# city farthest from tour
+		_, nextcity = findmax(dists_to_tour)
+		
+		# find where to add it
+		bestcost = inscost(nextcity, 1, path, distmat)
+		bestind = 1
+		for ind in 2:(length(path) - 1)
+			altcost = inscost(nextcity, ind, path, distmat)
+			if altcost < bestcost
+				bestcost = altcost
+				bestind = ind
+			end
+		end
+		# and add the next city at the best spot found
+		insert!(path, bestind + 1, nextcity) # +1 since arg to insert! is where nextcity ends up
+		
+		# update distances to tour
+		dists_to_tour[nextcity] = 0
+		for i in 1:n
+			c = dists_to_tour[i]
+			if c == zero(T) # i already in tour
+				continue
+			end
+			altc = (distmat[i, nextcity] + distmat[nextcity, i]) / 2 # cost i--nextcity
+			if altc < c
+				@inbounds dists_to_tour[i] = altc
+			end
+		end
+	end
+	return path, pathcost(distmat, path)
+end
+
 ###
 # helpers
 ###
 
 # make sure a passed distance matrix is a square
 function check_square(m, msg)
-	if size(m, 1) != size(m, 2)
+	n = size(m, 1)
+	if n != size(m, 2)
 		error(msg)
 	end
+	return n
 end
 
 # helper for readable one-line path costs
@@ -262,6 +303,13 @@ function pathcost_rev{T<:Real}(distmat::Matrix{T}, path::Vector{Int}, revLow::In
 		end
 	end
 	return cost
+end
+
+"Cost of inserting city `k` after index `after` in path `path` with costs `distmat`."
+function inscost(k, after, path, distmat)
+	return distmat[path[after], k] + 
+		  distmat[k, path[after + 1]] -
+		  distmat[path[after], path[after + 1]]
 end
 	
 ###
