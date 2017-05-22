@@ -1,3 +1,12 @@
 http://www.seas.gwu.edu/~simhaweb/champalg/tsp/tsp.html
 http://davidsjohnson.net/papers/TSPchapter.pdf
 http://people.idsia.ch/~luca/acs-bio97.pdf
+
+@book{cook2014pursuit,
+  title={In Pursuit of the Traveling Salesman: Mathematics at the Limits of Computation},
+  author={Cook, W.J.},
+  isbn={9780691163529},
+  lccn={2011030626},
+  year={2014},
+  publisher={Princeton University Press}
+}
