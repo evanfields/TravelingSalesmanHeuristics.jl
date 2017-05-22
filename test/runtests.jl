@@ -18,15 +18,20 @@ end
 function testpathvalidity(path, iscycle)
 	if iscycle
 		@test path[1] == path[end]
-		pop!(path)
 	end
-	path = sort(path)
-	for i in 1:length(path)
-		@test path[i] == i
-	end
+	n = iscycle ? length(path) - 1 : length(path)
+	@test sort(unique(path)) == collect(1:n)
 end
 
-
+# tests that a path-cost pair is consistent with the distance matrix
+# basically a reimplementation of `pathcost`, but hey...less likely to double a mistake?
+function testpathcost(path, cost, dm)
+	c = zero(eltype(dm))
+	for i in 1:(length(path) - 1)
+		c += dm[path[i], path[i+1]]
+	end
+	@test isapprox(c, cost)
+end
 
 ###
 # main tests
@@ -82,6 +87,21 @@ function test_cheapest_insertion()
 	@test_throws ErrorException cheapest_insertion(dmbad)
 end
 
+function test_farthest_insertion()
+	# standard symmetric case
+	dm = generate_planar_distmat(8)
+	path, cost = farthest_insertion(dm, 1)
+	testpathvalidity(path, true)
+	testpathcost(path, cost, dm)
+	# invalid argument
+	@test_throws ErrorException farthest_insertion(dm, 0)
+	# asymmetric matrix
+	dm = rand(20, 20)
+	path, cost = farthest_insertion(dm, 1)
+	testpathvalidity(path, true)
+	testpathcost(path, cost, dm)
+end
+
 function test_simulated_annealing()
 	dm = generate_planar_distmat(14)
 	# single start
@@ -132,6 +152,7 @@ end
 srand(47)
 test_nearest_neighbor()
 test_cheapest_insertion()
+test_farthest_insertion()
 test_simulated_annealing()
 test_bounds()
 test_path_costs()

@@ -2,10 +2,11 @@ module TravelingSalesmanHeuristics
 
 using Compat: view
 
+include("helpers.jl")
 include("simulated_annealing.jl")
 include("lowerbounds.jl")
 
-export solve_tsp, lowerbound, nearest_neighbor, cheapest_insertion, simulated_annealing, two_opt
+export solve_tsp, lowerbound, nearest_neighbor, cheapest_insertion, simulated_annealing, farthest_insertion, two_opt
 
 """
 .. solve_tsp(distmat) ..
@@ -132,21 +133,13 @@ function cheapest_insertion{T<:Real}(distmat::Matrix{T}, initpath::Vector{Int})
 	
 	# collect cities to visited
 	visitus = setdiff(collect(1:n), initpath)
-		
-	# helper for insertion cost
-	# tour cost change for inserting node k after the node at index after in the path
-	function inscost(k, after)
-		return distmat[path[after], k] + 
-			  distmat[k, path[after + 1]] -
-			  distmat[path[after], path[after + 1]]
-	end
 	
 	while !isempty(visitus)
 		bestCost = Inf
 		bestInsertion = (-1, -1)
 		for k in visitus
 			for after in 1:(length(path) - 1) # can't insert after end of path
-				c = inscost(k, after)
+				c = inscost(k, after, path, distmat)
 				if c < bestCost
 					bestCost = c
 					bestInsertion = (k, after)
@@ -216,9 +209,15 @@ end
 
 function farthest_insertion{T<:Real}(distmat::Matrix{T}, firstcity::Int)
 	n = check_square(distmat, "Must pass square distance matrix to farthest_insertion.")
+	if firstcity < 1 || firstcity > n
+		error("First city for farthest_insertion must be in [1,..,n]")
+	end
+	smallval = minimum(distmat) - one(T) # will never be the max
+	
 	path = Int[firstcity, firstcity]
 	sizehint!(path, n)
 	dists_to_tour = (distmat[firstcity, :] + distmat[:, firstcity]) / 2
+	dists_to_tour[firstcity] = smallval
 	
 	while length(path) < n + 1
 		# city farthest from tour
@@ -238,7 +237,7 @@ function farthest_insertion{T<:Real}(distmat::Matrix{T}, firstcity::Int)
 		insert!(path, bestind + 1, nextcity) # +1 since arg to insert! is where nextcity ends up
 		
 		# update distances to tour
-		dists_to_tour[nextcity] = 0
+		dists_to_tour[nextcity] = smallval
 		for i in 1:n
 			c = dists_to_tour[i]
 			if c == zero(T) # i already in tour
@@ -251,65 +250,6 @@ function farthest_insertion{T<:Real}(distmat::Matrix{T}, firstcity::Int)
 		end
 	end
 	return path, pathcost(distmat, path)
-end
-
-###
-# helpers
-###
-
-# make sure a passed distance matrix is a square
-function check_square(m, msg)
-	n = size(m, 1)
-	if n != size(m, 2)
-		error(msg)
-	end
-	return n
-end
-
-# helper for readable one-line path costs
-# optionally specify the bounds for the subpath we want the cost of
-# defaults to the whole path
-# but when calculating reversed path costs can help to have subpath costs
-function pathcost{T<:Real}(distmat::Matrix{T}, path::Vector{Int}, lb::Int = 1, ub::Int = length(path))
-	cost = zero(T)
-	for i in lb:(ub - 1)
-		@inbounds cost += distmat[path[i], path[i+1]]
-	end
-	return cost
-end
-# calculate the cost of reversing part of a path
-# cost of walking along the entire path specified but reversing the sequence from revLow to revHigh, inclusive
-function pathcost_rev{T<:Real}(distmat::Matrix{T}, path::Vector{Int}, revLow::Int, revHigh::Int)
-	cost = zero(T)
-	# if there's an initial unreversed section
-	if revLow > 1
-		for i in 1:(revLow - 2)
-			@inbounds cost += distmat[path[i], path[i+1]]
-		end
-		# from end of unreversed section to beginning of reversed section
-		@inbounds cost += distmat[path[revLow - 1], path[revHigh]]
-	end
-	# main reverse section
-	for i in revHigh:-1:(revLow + 1)
-		@inbounds cost += distmat[path[i], path[i-1]]
-	end
-	# if there's an unreversed section after the reversed bit
-	n = length(path)
-	if revHigh < length(path)
-		# from end of reversed section back to regular
-		@inbounds cost += distmat[path[revLow], path[revHigh + 1]]
-		for i in (revHigh + 1):(n-1)
-			@inbounds cost += distmat[path[i], path[i+1]]
-		end
-	end
-	return cost
-end
-
-"Cost of inserting city `k` after index `after` in path `path` with costs `distmat`."
-function inscost(k, after, path, distmat)
-	return distmat[path[after], k] + 
-		  distmat[k, path[after + 1]] -
-		  distmat[path[after], path[after + 1]]
 end
 	
 ###
