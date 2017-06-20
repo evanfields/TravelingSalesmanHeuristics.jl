@@ -11,6 +11,26 @@ function check_square(m, msg)
 	return n
 end
 
+function repetitive_heuristic{T<:Real}(dm::Matrix{T},
+                                       heuristic::Function,
+                                       repetitive_kw = :firstcity; kwargs...)
+	# call the heuristic with varying starting cities
+	n = size(dm, 1)
+	results_list = Vector{Tuple{Vector{Int}, T}}(n)
+	for i in 1:n
+		println("doing first city $i")
+		results_list[i] = heuristic(dm; kwargs..., repetitive_kw => i)
+	end
+	
+	bestind, bestcost = 1, results_list[1][2]
+	for i in 2:n
+		if results_list[i][2] < bestcost
+			bestind, bestcost = i, results_list[i][2]
+		end
+	end
+	return results_list[bestind]
+end
+
 # helper for readable one-line path costs
 # optionally specify the bounds for the subpath we want the cost of
 # defaults to the whole path
