@@ -37,8 +37,8 @@ symmetric and possibly could contain negative values, though nonpositive values 
 
 Optional arguments:
 
-firstCity: specifies the city to begin the path on. An empty Nullable corresponds to random selection. 
-	This argument is ignored if repetitive = true. Defaults to an empty Nullable{Int}
+firstCity (Int): specifies the city to begin the path on. Not specifying a value corresponds to random selection. 
+	This argument is ignored if repetitive = true.
 	
 repetitive: boolean for whether to try starting from all possible cities, keeping the best. Defaults to false.
 
@@ -51,20 +51,26 @@ do2opt: whether to refine the path found by 2-opt switches (corresponds to remov
 returns a tuple (path, pathcost) where path is a Vector{Int} corresponding to the order of cities visited
 """
 function nearest_neighbor{T<:Real}(distmat::Matrix{T};
-							   firstcity::Nullable{Int} = Nullable{Int}(),
+							   firstcity::Union{Int, Nullable{Int}} = rand(1:size(distmat, 1)),
 							   repetitive = false,
 							   closepath = true,
 							   do2opt = true)
 	# must have a square matrix 
-	check_square(distmat, "Must pass a square distance matrix to nearest_neighbor")
+	numCities = check_square(distmat, "Must pass a square distance matrix to nearest_neighbor")
 	
-	numCities = size(distmat, 1)
+	# for backward compatibility, firstcity can be Int or Nullable{Int}
+	# extract an int value
+	if isa(firstcity, Int)
+		firstcityint = firstcity
+	else # Nullable{Int}
+		firstcityint = isnull(firstcity) ? rand(1:numCities) : get(firstcity)
+	end
 	
 	# if repetitive, we do all possible cities, and pick the best
 	if repetitive
 		function nnHelper(i)
 			nearest_neighbor(distmat,
-						  firstcity = Nullable(i),
+						  firstcity = i,
 						  closepath = closepath,
 						  do2opt = do2opt,
 						  repetitive = false)
@@ -80,16 +86,11 @@ function nearest_neighbor{T<:Real}(distmat::Matrix{T};
 	
 	# put first city on path
 	path = Vector{Int}()
-	if isnull(firstcity)
-		firstcity = rand(1:numCities)
-	else
-		firstcity = get(firstcity)
-	end
-	push!(path, firstcity)
+	push!(path, firstcityint)
 	
 	# cities to visit
-	citiesToVisit = collect(1:(firstcity - 1))
-	append!(citiesToVisit, collect((firstcity + 1):numCities))
+	citiesToVisit = collect(1:(firstcityint - 1))
+	append!(citiesToVisit, collect((firstcityint + 1):numCities))
 	
 	# nearest neighbor loop
 	while !isempty(citiesToVisit)
@@ -103,7 +104,7 @@ function nearest_neighbor{T<:Real}(distmat::Matrix{T};
 	
 	# complete cycle? (duplicates first city)
 	if closepath
-		push!(path, firstcity)
+		push!(path, firstcityint)
 	end
 	
 	# do swaps?
