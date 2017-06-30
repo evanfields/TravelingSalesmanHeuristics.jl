@@ -38,10 +38,7 @@ symmetric and possibly could contain negative values, though nonpositive values 
 Optional arguments:
 
 firstCity (Int): specifies the city to begin the path on. Not specifying a value corresponds to random selection. 
-	This argument is ignored if repetitive = true.
 	
-repetitive: boolean for whether to try starting from all possible cities, keeping the best. Defaults to false.
-
 closepath: boolean for whether to include the arc from the last city visited back to the first city in
 	cost calculations. If true, the first city appears first and last in the path. Defaults to true.
 	
@@ -52,9 +49,9 @@ returns a tuple (path, pathcost) where path is a Vector{Int} corresponding to th
 """
 function nearest_neighbor{T<:Real}(distmat::Matrix{T};
 							   firstcity::Union{Int, Nullable{Int}} = rand(1:size(distmat, 1)),
-							   repetitive = false,
-							   closepath = true,
-							   do2opt = true)
+							   repetitive::Bool = false,
+							   closepath::Bool = true,
+							   do2opt::Bool = true)
 	# must have a square matrix 
 	numCities = check_square(distmat, "Must pass a square distance matrix to nearest_neighbor")
 	
@@ -63,27 +60,19 @@ function nearest_neighbor{T<:Real}(distmat::Matrix{T};
 	if isa(firstcity, Int)
 		firstcityint = firstcity
 	else # Nullable{Int}
+		warn("Calling `nearest_neighbor` with firstcity a Nullable{Int} is deprecated;" * 
+		     " pass the Int directly. A random city is used if no city is specified.")
 		firstcityint = isnull(firstcity) ? rand(1:numCities) : get(firstcity)
 	end
 	
-	# if repetitive, we do all possible cities, and pick the best
+	# if calling with KW repetitive is deprecated; pass the call to repetitive_heuristic
 	if repetitive
-		function nnHelper(i)
-			nearest_neighbor(distmat,
-						  firstcity = i,
-						  closepath = closepath,
-						  do2opt = do2opt,
-						  repetitive = false)
-		end
-		# do nn for each startin city
-		results = map(nnHelper, collect(1:numCities))
-		# pick out lowest cost
-		_, bestInd = findmin(map(res -> res[2], results))
-		return results[bestInd]
+		warn("Calling `nearest_neighbor` with keyword `repetitive` is deprecated;'" *
+		     " instead call `repetitive_heuristic(distmat, nearest_neighbor; kwargs...)`")
+		return repetitive_heuristic(distmat, nearest_neighbor;
+		                            closepath = closepath, do2opt = do2opt)
 	end
-	
-	# if not repetitive, we actually perform the heuristic for one starting city
-	
+		
 	# put first city on path
 	path = Vector{Int}()
 	push!(path, firstcityint)
