@@ -17,8 +17,7 @@ function repetitive_heuristic{T<:Real}(dm::Matrix{T},
 	# call the heuristic with varying starting cities
 	n = size(dm, 1)
 	results_list = Vector{Tuple{Vector{Int}, T}}(n)
-	for i in 1:n
-		println("doing first city $i")
+	Threads.@threads for i in 1:n
 		results_list[i] = heuristic(dm; kwargs..., repetitive_kw => i)
 	end
 	
