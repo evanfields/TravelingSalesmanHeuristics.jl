@@ -50,7 +50,9 @@ function test_nearest_neighbor()
 		@test cost > 0
 		testpathvalidity(path, true)
 		# repetitive
-		@test_warn "deprecated" nearest_neighbor(dm, repetitive = true)
+		if Base.VERSION >= v"0.6.0"
+			@test_warn "deprecated" nearest_neighbor(dm, repetitive = true)
+		end
 		path, cost = repetitive_heuristic(dm, nearest_neighbor)
 		@test cost > 0
 		testpathvalidity(path, true)
@@ -79,7 +81,9 @@ function test_cheapest_insertion()
 	@test cost > 0
 	testpathvalidity(path, true) # should be a closed path
 	# repetitive start
-	@test_warn "deprecated" cheapest_insertion(dm, repetitive = true)
+	if Base.VERSION >= v"0.6.0"
+		@test_warn "deprecated" cheapest_insertion(dm, repetitive = true)
+	end
 	path, cost = repetitive_heuristic(dm, cheapest_insertion)
 	@test cost > 0
 	testpathvalidity(path, true)
