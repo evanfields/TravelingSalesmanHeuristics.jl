@@ -6,8 +6,8 @@ include("helpers.jl")
 include("simulated_annealing.jl")
 include("lowerbounds.jl")
 
-export solve_tsp, lowerbound, nearest_neighbor, cheapest_insertion, simulated_annealing, farthest_insertion, two_opt
-
+export solve_tsp, lowerbound, repetitive_heuristic, two_opt,
+       nearest_neighbor, cheapest_insertion, simulated_annealing, farthest_insertion
 """
 .. solve_tsp(distmat) ..
 
@@ -48,10 +48,10 @@ do2opt: whether to refine the path found by 2-opt switches (corresponds to remov
 returns a tuple (path, pathcost) where path is a Vector{Int} corresponding to the order of cities visited
 """
 function nearest_neighbor{T<:Real}(distmat::Matrix{T};
-							   firstcity::Union{Int, Nullable{Int}} = rand(1:size(distmat, 1)),
-							   repetitive::Bool = false,
-							   closepath::Bool = true,
-							   do2opt::Bool = true)
+							       firstcity::Union{Int, Nullable{Int}} = rand(1:size(distmat, 1)),
+							       repetitive::Bool = false,
+							       closepath::Bool = true,
+							       do2opt::Bool = true)
 	# must have a square matrix 
 	numCities = check_square(distmat, "Must pass a square distance matrix to nearest_neighbor")
 	
@@ -65,7 +65,7 @@ function nearest_neighbor{T<:Real}(distmat::Matrix{T};
 		firstcityint = isnull(firstcity) ? rand(1:numCities) : get(firstcity)
 	end
 	
-	# if calling with KW repetitive is deprecated; pass the call to repetitive_heuristic
+	# calling with KW repetitive is deprecated; pass the call to repetitive_heuristic
 	if repetitive
 		warn("Calling `nearest_neighbor` with keyword `repetitive` is deprecated;'" *
 		     " instead call `repetitive_heuristic(distmat, nearest_neighbor; kwargs...)`")
@@ -164,30 +164,31 @@ repetitive: boolean for whether to try starting from all possible cities, keepin
 do2opt: boolean for whether to improve the paths found by 2-opt swaps. Defaults to true.
 """
 function cheapest_insertion{T<:Real}(distmat::Matrix{T};
-								 firstcity::Nullable{Int} = Nullable{Int}(),
-							     repetitive::Bool = false,
-								 do2opt::Bool = true)
+								     firstcity::Union{Int, Nullable{Int}} = rand(1:size(distmat, 1)),
+							         repetitive::Bool = false,
+								     do2opt::Bool = true)
 	#infer size
 	n = size(distmat, 1)
 
-	# if repetitive, we do all possible cities, and pick the best
+	# calling with KW repetitive is deprecated; pass the call to repetitive_heuristic
 	if repetitive
-		function ciHelper(i)
-			cheapest_insertion(distmat,
-						  firstcity = Nullable(i),
-						  do2opt = do2opt,
-						  repetitive = false)
-		end
-		# do cheapest insertion for each starting city
-		results = map(ciHelper, collect(1:n))
-		# pick out lowest cost
-		_, bestInd = findmin(map(res -> res[2], results))
-		return results[bestInd]
+		warn("Calling `cheapest_insertionr` with keyword `repetitive` is deprecated;'" *
+		     " instead call `repetitive_heuristic(distmat, cheapest_insertion; kwargs...)`")
+		return repetitive_heuristic(distmat, cheapest_insertion; do2opt = do2opt)
+	end
+	
+	# for backward compatibility, firstcity can be Int or Nullable{Int}
+	# extract an int value
+	if isa(firstcity, Int)
+		firstcityint = firstcity
+	else # Nullable{Int}
+		warn("Calling `nearest_neighbor` with firstcity a Nullable{Int} is deprecated;" * 
+		     " pass the Int directly. A random city is used if no city is specified.")
+		firstcityint = isnull(firstcity) ? rand(1:n) : get(firstcity)
 	end
 	
 	# okay, we're not repetitive. Do we pick first city at random?
-	firstcity = isnull(firstcity) ? rand(1:n) : get(firstcity)
-	path, cost = cheapest_insertion(distmat, [firstcity, firstcity])
+	path, cost = cheapest_insertion(distmat, [firstcityint, firstcityint])
 	
 	# user may have asked for 2-opt refinement
 	if do2opt
@@ -257,7 +258,7 @@ function two_opt{T<:Real}(distmat::Matrix{T}, path::Vector{Int})
 	end
 	
 	# don't modify input
-	path = copy(path)
+	path = copy(path) # Int is a bitstype
 	
 	# main loop
 	# check every possible switch until no 2-swaps reduce objective
