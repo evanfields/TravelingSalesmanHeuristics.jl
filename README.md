@@ -6,9 +6,9 @@
 ### Overview ###
 `TravelingSalesmanHeuristics` is a Julia package containing simple heuristics for the [traveling salesman problem](https://en.wikipedia.org/wiki/Travelling_salesman_problem). 
 
-As of 2016-5-19, `TravelingSalesmanHeuristics` implements the nearest neighbor and cheapest insertion strategies for path generation, the 2-opt strategy for path refinement, and a simulated annealing heuristic which can be used for path generation or refinement. A simple spanning tree type lower bound is also implemented.
+As of 2017-7-13, `TravelingSalesmanHeuristics` implements the nearest neighbor, farthest insertion, and cheapest insertion strategies for path generation, the 2-opt strategy for path refinement, and a simulated annealing heuristic which can be used for path generation or refinement. A simple spanning tree type lower bound is also implemented.
 
-The documentation consists of this readme and detailed inline documentation for the exported functions `solve_tsp`, `nearest_neighbor`, `cheapest_insertion`, `two_opt`, and `simulated_annealing`. After installing the package, this inline documentation can be accessed at a Julia REPL, e.g.
+The documentation consists of this readme and detailed inline documentation for the exported functions `solve_tsp`, `nearest_neighbor`, `farthest_insertion`, `cheapest_insertion`, `two_opt`, `repetitive_heuristic`, and `simulated_annealing`. After installing the package, this inline documentation can be accessed at a Julia REPL, e.g.
 ```
 using TravelingSalesmanHeuristics
 ?nearest_neighbor
@@ -17,7 +17,7 @@ using TravelingSalesmanHeuristics
 This package is both my first Julia package and my first effort in open source software, so I welcome any contributions, suggestions, feature requests, pull requests, criticisms, etc.
 
 ### When to use ###
-Though the traveling salesman problem is the canonical NP-hard problem, in practice heuristic methods are often unnecessary. Modern integer programming solves such as CPLEX and Gurobi can quickly provide excellent (even certifiably optimal) solutions. If you are interested in solving TSP instances to optimality, I highly recommend the [JuMP](https://github.com/JuliaOpt/JuMP.jl) package. Even if you are not concerned with obtaining truly optimal solutions, using a MILP solver and allowing a relatively large optimality gap is a promising strategy for finding high quality TSP solutions.
+Though the traveling salesman problem is the canonical NP-hard problem, in practice heuristic methods are often unnecessary. Modern integer programming solvers such as CPLEX and Gurobi can quickly provide excellent (even certifiably optimal) solutions. If you are interested in solving TSP instances to optimality, I highly recommend the [JuMP](https://github.com/JuliaOpt/JuMP.jl) package. Even if you are not concerned with obtaining truly optimal solutions, using a MILP solver and allowing a relatively large optimality gap is a promising strategy for finding high quality TSP solutions. If you would like to use an integer programming solver along with JuMP but don't have access to commercial software, [GLPK](https://github.com/JuliaOpt/GLPK.jl) can work well on relatively small instances.
 
 Use of this package is most appropriate when you want decent solutions to small or moderate sized TSP instances with a minimum of hassle: one-off personal projects, if you can't install a mixed integer linear programming solver, prototyping, etc.
 
