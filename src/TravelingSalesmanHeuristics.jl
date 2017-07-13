@@ -201,8 +201,11 @@ Farthest insertion strategy for path generation. `distmat` must be a square real
 
 Optional arguments:
 
-firstCity (Int): specifies the city to begin the path on. Not specifying a value corresponds to random selection."""
-function farthest_insertion{T<:Real}(distmat::Matrix{T}; firstcity::Int = rand(1:size(distmat, 1)))
+firstCity (Int): specifies the city to begin the path on. Not specifying a value corresponds to random selection.
+
+do2opt (Bool): whether to improve the path by 2-opt swaps. Defaults to true."""
+function farthest_insertion{T<:Real}(distmat::Matrix{T};
+                                     firstcity::Int = rand(1:size(distmat, 1)), do2opt::Bool = true)
 	n = check_square(distmat, "Must pass square distance matrix to farthest_insertion.")
 	if firstcity < 1 || firstcity > n
 		error("First city for farthest_insertion must be in [1,..,n]")
@@ -244,6 +247,11 @@ function farthest_insertion{T<:Real}(distmat::Matrix{T}; firstcity::Int = rand(1
 			end
 		end
 	end
+	
+	if do2opt
+		path, _ = two_opt(distmat, path)
+	end
+	
 	return path, pathcost(distmat, path)
 end
 	
