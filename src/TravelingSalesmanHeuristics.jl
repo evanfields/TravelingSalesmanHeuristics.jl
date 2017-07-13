@@ -149,17 +149,13 @@ end
 .. cheapest_insertion(distmat; ...) ..
 
 
-Cheapest insertion with a self-loop as the initial path.
-distmat must be a square real matrix. Non-symmetric distance matrices should work. Negative
-distances have not been tested but may also work.
+Cheapest insertion with a self-loop as the initial path. 
+`distmat` must be a square real matrix. Non-symmetric distance matrices are fine; negative
+distances have not been tested but should also work.
 
 Optional arguments:
 
-firstcity: Specifies which city should have a self loop as the initial path. Nullable(i) for 
-city i or an empty Nullable{Int} for random selection. This argument is ignored if
-repetitive = true. Defaults to random selection.
-
-repetitive: boolean for whether to try starting from all possible cities, keeping the best. Defaults to false.
+firstCity (Int): specifies the city to begin the path on. Not specifying a value corresponds to random selection.
 
 do2opt: boolean for whether to improve the paths found by 2-opt swaps. Defaults to true.
 """
@@ -198,7 +194,15 @@ function cheapest_insertion{T<:Real}(distmat::Matrix{T};
 	return path, cost
 end
 
-function farthest_insertion{T<:Real}(distmat::Matrix{T}, firstcity::Int = rand(1:size(distmat, 1)))
+"""
+.. farthest_insertion(distmat; ...) ..
+
+Farthest insertion strategy for path generation. `distmat` must be a square real matrix but need not be symmetric.
+
+Optional arguments:
+
+firstCity (Int): specifies the city to begin the path on. Not specifying a value corresponds to random selection."""
+function farthest_insertion{T<:Real}(distmat::Matrix{T}; firstcity::Int = rand(1:size(distmat, 1)))
 	n = check_square(distmat, "Must pass square distance matrix to farthest_insertion.")
 	if firstcity < 1 || firstcity > n
 		error("First city for farthest_insertion must be in [1,..,n]")
