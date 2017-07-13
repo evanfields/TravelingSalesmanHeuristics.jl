@@ -92,14 +92,14 @@ end
 function test_farthest_insertion()
 	# standard symmetric case
 	dm = generate_planar_distmat(8)
-	path, cost = farthest_insertion(dm, 1)
+	path, cost = farthest_insertion(dm)
 	testpathvalidity(path, true)
 	testpathcost(path, cost, dm)
 	# invalid argument
-	@test_throws ErrorException farthest_insertion(dm, 0)
+	@test_throws ErrorException farthest_insertion(dm; firstcity = 0)
 	# asymmetric matrix
 	dm = rand(20, 20)
-	path, cost = farthest_insertion(dm, 1)
+	path, cost = farthest_insertion(dm; firstcity = 1, do2opt = true)
 	testpathvalidity(path, true)
 	testpathcost(path, cost, dm)
 end

@@ -3,7 +3,7 @@
 - Introduced helper function `repetitive_heuristic(distmat, heuristic; keywords...)` for repeating a heuristic with many starting cities. The repetitition is parallelized with a `@threads` loop.
 - Using the `repetitive` keyword for `nearest_neighbor` or `cheapest_insertion` is deprecated. Instead, use `repetitive_heuristic(distmat, heuristic; ...)`. 
 - The `firstcity` keyword should now be an `Int`, not a `Nullable{Int}`. (For now, backwards compatibility is maintained). If the first city is not specified, a random city is chosen.
-- The available heuristics now include farthest insertion. Small experiments suggest farthest insertion is the fastest of the heuristics and performs decently well on Euclidean instances.
+- The available path generation heuristics now include farthest insertion. Small experiments suggest farthest insertion is the fastest of the generation heuristics and performs decently well on Euclidean instances.
 
 ## 2017-1-26 ##
 
