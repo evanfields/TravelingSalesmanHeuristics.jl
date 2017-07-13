@@ -50,7 +50,8 @@ function test_nearest_neighbor()
 		@test cost > 0
 		testpathvalidity(path, true)
 		# repetitive
-		path, cost = nearest_neighbor(dm, repetitive = true)
+		path, cost = nearest_neighbor(dm, repetitive = true) # deprecated
+		path, cost = repetitive_heuristic(dm, nearest_neighbor)
 		@test cost > 0
 		testpathvalidity(path, true)
 		# no loop, 2 opt
@@ -78,7 +79,8 @@ function test_cheapest_insertion()
 	@test cost > 0
 	testpathvalidity(path, true) # should be a closed path
 	# repetitive start
-	path, cost = cheapest_insertion(dm, repetitive = true)
+	path, cost = cheapest_insertion(dm, repetitive = true) # deprecated
+	path, cost = repetitive_heuristic(dm, cheapest_insertion)
 	@test cost > 0
 	testpathvalidity(path, true)
 	
