@@ -15,14 +15,60 @@ One-line interface to approximately solving a TSP by specifying a distance matri
 This method provides fairly quick solutions but no extra control. For more fine-grained
 control over the heuristics used, try nearest_neighbor or cheapest_insertion.
 """
-function solve_tsp{T<:Real}(distmat::Matrix{T})
-	p1, c1 = nearest_neighbor(distmat)
-	p2, c2 = cheapest_insertion(distmat)
-	if c1 < c2
-		return p1, c1
-	else
-		return p2, c2
+function solve_tsp{T<:Real}(distmat::Matrix{T}; effort::Real = 40.0)
+	if effort < 0 || effort > 100
+		warn("effort keyword passed to solve_tsp must be in [0,100]")
+		effort = clamp(effort, 0, 100)
 	end
+	
+	lowest_threshold = 5
+	
+	# begin adding heuristics as dictated by the effort level,
+	# starting with the very fastest
+	answers = Vector{Tuple{Vector{Int}, T}}()
+	push!(answers, farthest_insertion(distmat; do2opt = false))
+	if effort < lowest_threshold # fastest heuristic and out
+		return answers[1]
+	end
+	# otherwise, we'll try several heuristics and return the best
+	
+	
+	# add any nearest neighbor heuristics as dictated by effort
+	if effort >= 60 # repetitive-NN, 2-opt on each iter
+		push!(answers, repetitive_heuristic(distmat, nearest_neighbor; do2opt = true))
+	elseif effort >= 25 # repetitive-NN, 2-opt on final
+		rnnpath, _ = repetitive_heuristic(distmat, nearest_neighbor; do2opt = false)
+		push!(answers, two_opt(distmat, rnnpath))
+	elseif effort >= 15 # NN w/ 2-opt
+		push!(answers, nearest_neighbor(distmat; do2opt = true))
+	end
+	
+	# farthest insertions as needed
+	if effort >= 70 # repetitive-FI, 2-opt on each
+		push!(answers, repetitive_heuristic(distmat, farthest_insertion; do2opt = true))
+	elseif effort >= 5 # FI w/ 2-opt
+		push!(answers, farthest_insertion(distmat; do2opt = true))
+	end
+	
+	# cheapest insertions
+	if effort >= 90 # repetitive-CI w/ 2-opt on each
+		push!(answers, repetitive_heuristic(distmat, cheapest_insertion; do2opt = true))
+	elseif effort >= 35
+		push!(answers, cheapest_insertion(distmat; do2opt = true))
+	end
+	
+	# simulated annealing refinement, seeded with best so far
+	if effort >= 80
+		_, bestind = findmin(pc[2] for pc in answers)
+		bestpath, bestcost = answers[bestind]
+		nstart = ceil(Int, (effort - 79)/5)
+		push!(answers,
+		      simulated_annealing(distmat; num_starts = nstart, init_path = Nullable(bestpath)))
+	end
+	
+	# pick best
+	_, bestind = findmin(pc[2] for pc in answers)
+	return answers[bestind]
 end
 
 ###
