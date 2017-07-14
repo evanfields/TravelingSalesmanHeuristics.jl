@@ -11,9 +11,19 @@ export solve_tsp, lowerbound, repetitive_heuristic, two_opt,
 """
 .. solve_tsp(distmat) ..
 
-One-line interface to approximately solving a TSP by specifying a distance matrix.
-This method provides fairly quick solutions but no extra control. For more fine-grained
-control over the heuristics used, try nearest_neighbor or cheapest_insertion.
+Simple one-line call to approximately solving a TSP by specifying a distance matrix.
+
+The optional keyword `effort` (real number in [0,100], defaults to 40) specifies the
+tradeoff between computation time and quality of solution returned. Higher values
+tend to lead to better solutions found at the cost of more computation time. Please note
+that because both some heuristics and computation time are random, it is not guaranteed
+that a high-effort-value call with always run slower or return a better solution than a
+low-effort call, though this is almost always the case. Also note that an effort of 100
+neither guarantees a solution which is optimal nor the best solution that can be found via
+extensive use of the methods in this package.
+
+For more fine-grained control over the heuristics used, use heuristic methods such as
+`nearest_neighbor`,`farthest_insertion`, or `simulated_annealing`.
 """
 function solve_tsp{T<:Real}(distmat::Matrix{T}; effort::Real = 40.0)
 	if effort < 0 || effort > 100
