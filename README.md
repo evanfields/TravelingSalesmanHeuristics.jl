@@ -53,13 +53,13 @@ julia> path, pathcost = solve_tsp(distmat)
 ```
 Notice that the path starts and ends at city 25 and our cost is about 5.95.
 
-You can vary the trade-off between solution time and solution quality with the `effort` keyword:
+You can vary the trade-off between solution time and solution quality with the `quality_factor` keyword:
 ```
-julia> @time solve_tsp(distmat; effort = 1)
+julia> @time solve_tsp(distmat; quality_factor = 1)
   0.000034 seconds (17 allocations: 3.281 KiB)
 ([22, 21, 48, 41, 12, 25, 39, 44, 46, 14  …  31, 1, 27, 23, 17, 19, 4, 3, 13, 22], 5.960141233105482)
 
-julia> @time solve_tsp(distmat; effort = 75)
+julia> @time solve_tsp(distmat; quality_factor = 75)
   0.010056 seconds (7.43 k allocations: 1.258 MiB)
 ([28, 9, 42, 36, 32, 34, 47, 20, 27, 23  …  30, 35, 16, 2, 7, 33, 49, 45, 43, 28], 5.690542089798684)
 ```

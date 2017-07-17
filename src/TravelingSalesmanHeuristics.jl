@@ -13,65 +13,65 @@ export solve_tsp, lowerbound, repetitive_heuristic, two_opt,
 
 Simple one-line call to approximately solving a TSP by specifying a distance matrix.
 
-The optional keyword `effort` (real number in [0,100], defaults to 40) specifies the
+The optional keyword `quality_factor` (real number in [0,100], defaults to 40) specifies the
 tradeoff between computation time and quality of solution returned. Higher values
 tend to lead to better solutions found at the cost of more computation time. Please note
 that because both some heuristics and computation time are random, it is not guaranteed
-that a high-effort-value call with always run slower or return a better solution than a
-low-effort call, though this is almost always the case. Also note that an effort of 100
+that a high-quality_factor call with always run slower or return a better solution than a
+low-quality_factor call, though this is almost always the case. Also note that an quality_factor of 100
 neither guarantees a solution which is optimal nor the best solution that can be found via
 extensive use of the methods in this package.
 
 For more fine-grained control over the heuristics used, use heuristic methods such as
 `nearest_neighbor`,`farthest_insertion`, or `simulated_annealing`.
 """
-function solve_tsp{T<:Real}(distmat::Matrix{T}; effort::Real = 40.0)
-	if effort < 0 || effort > 100
-		warn("effort keyword passed to solve_tsp must be in [0,100]")
-		effort = clamp(effort, 0, 100)
+function solve_tsp{T<:Real}(distmat::Matrix{T}; quality_factor::Real = 40.0)
+	if quality_factor < 0 || quality_factor > 100
+		warn("quality_factor keyword passed to solve_tsp must be in [0,100]")
+		quality_factor = clamp(quality_factor, 0, 100)
 	end
 	
 	lowest_threshold = 5
 	
-	# begin adding heuristics as dictated by the effort level,
+	# begin adding heuristics as dictated by the quality_factor,
 	# starting with the very fastest
 	answers = Vector{Tuple{Vector{Int}, T}}()
 	push!(answers, farthest_insertion(distmat; do2opt = false))
-	if effort < lowest_threshold # fastest heuristic and out
+	if quality_factor < lowest_threshold # fastest heuristic and out
 		return answers[1]
 	end
 	# otherwise, we'll try several heuristics and return the best
 	
 	
-	# add any nearest neighbor heuristics as dictated by effort
-	if effort >= 60 # repetitive-NN, 2-opt on each iter
+	# add any nearest neighbor heuristics as dictated by quality_factor
+	if quality_factor >= 60 # repetitive-NN, 2-opt on each iter
 		push!(answers, repetitive_heuristic(distmat, nearest_neighbor; do2opt = true))
-	elseif effort >= 25 # repetitive-NN, 2-opt on final
+	elseif quality_factor >= 25 # repetitive-NN, 2-opt on final
 		rnnpath, _ = repetitive_heuristic(distmat, nearest_neighbor; do2opt = false)
 		push!(answers, two_opt(distmat, rnnpath))
-	elseif effort >= 15 # NN w/ 2-opt
+	elseif quality_factor >= 15 # NN w/ 2-opt
 		push!(answers, nearest_neighbor(distmat; do2opt = true))
 	end
 	
 	# farthest insertions as needed
-	if effort >= 70 # repetitive-FI, 2-opt on each
+	if quality_factor >= 70 # repetitive-FI, 2-opt on each
 		push!(answers, repetitive_heuristic(distmat, farthest_insertion; do2opt = true))
-	elseif effort >= 5 # FI w/ 2-opt
+	elseif quality_factor >= 5 # FI w/ 2-opt
 		push!(answers, farthest_insertion(distmat; do2opt = true))
 	end
 	
 	# cheapest insertions
-	if effort >= 90 # repetitive-CI w/ 2-opt on each
+	if quality_factor >= 90 # repetitive-CI w/ 2-opt on each
 		push!(answers, repetitive_heuristic(distmat, cheapest_insertion; do2opt = true))
-	elseif effort >= 35
+	elseif quality_factor >= 35
 		push!(answers, cheapest_insertion(distmat; do2opt = true))
 	end
 	
 	# simulated annealing refinement, seeded with best so far
-	if effort >= 80
+	if quality_factor >= 80
 		_, bestind = findmin(pc[2] for pc in answers)
 		bestpath, bestcost = answers[bestind]
-		nstart = ceil(Int, (effort - 79)/5)
+		nstart = ceil(Int, (quality_factor - 79)/5)
 		push!(answers,
 		      simulated_annealing(distmat; num_starts = nstart, init_path = Nullable(bestpath)))
 	end
