@@ -11,6 +11,7 @@ As of 2017-7-13, `TravelingSalesmanHeuristics` implements the nearest neighbor, 
 The documentation consists of this readme and detailed inline documentation for the exported functions `solve_tsp`, `nearest_neighbor`, `farthest_insertion`, `cheapest_insertion`, `two_opt`, `repetitive_heuristic`, and `simulated_annealing`. After installing the package, this inline documentation can be accessed at a Julia REPL, e.g.
 ```
 using TravelingSalesmanHeuristics
+?solve_tsp
 ?nearest_neighbor
 ```
 
@@ -24,7 +25,7 @@ Use of this package is most appropriate when you want decent solutions to small 
 A word of warning: the heuristics implemented are
 * heuristics, meaning you won't get any optimality guarantees and except on very small instances are unlikely to find the optimal tour;
 * general purpose, meaning they do not take advantage of any problem specific structure;
-* simple and (hopefully) readable but not terribly high performance, meaning you may have trouble with large instances. In particular the 2-opt path refinement strategy slows down noticeably when there are >400 cities.
+* simple and (hopefully) readable but not terribly high performance, meaning you may have trouble with large instances. In particular the two-opt path refinement strategy slows down noticeably when there are >400 cities.
 
 ### Installation ###
 Install the package by typing `Pkg.add("TravelingSalesmanHeuristics")` into a Julia REPL. Load it with `using TravelingSalesmanHeuristics`.
@@ -64,10 +65,10 @@ julia> @time solve_tsp(distmat; quality_factor = 75)
 ([28, 9, 42, 36, 32, 34, 47, 20, 27, 23  …  30, 35, 16, 2, 7, 33, 49, 45, 43, 28], 5.690542089798684)
 ```
 
-For more detailed control over how your TSP instance is solved, use the `nearest_neighbor`, `farthest_insertion`, `cheapest_insertion`, `simulated_annealing`, or `two_opt` functions. For example, we might want to solve our TSP by doing cheapest insertion with a loop on city 1 as our initial path and then refine with 2-opt:
+For more detailed control over how your TSP instance is solved, use the `nearest_neighbor`, `farthest_insertion`, `cheapest_insertion`, `simulated_annealing`, or `two_opt` functions. For example, we might want to solve our TSP by doing cheapest insertion with a loop on city 1 as our initial path and then refine with two-opt:
 
 ```
-julia> path, pathcost = cheapest_insertion(distmat; firstcity = Nullable(1), do2opt = true)
+julia> path, pathcost = cheapest_insertion(distmat; firstcity = 1, do2opt = true)
 ([1,4,14,3,20,8,2,10,11,19  …  5,15,9,18,6,16,13,17,12,1],3.451385584282254)
 ```
 

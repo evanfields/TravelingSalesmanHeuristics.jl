@@ -13,17 +13,17 @@ export solve_tsp, lowerbound, repetitive_heuristic, two_opt,
 
 Simple one-line call to approximately solving a TSP by specifying a distance matrix.
 
-The optional keyword `quality_factor` (real number in [0,100], defaults to 40) specifies the
+The optional keyword `quality_factor` (real number in [0,100]; defaults to 40) specifies the
 tradeoff between computation time and quality of solution returned. Higher values
 tend to lead to better solutions found at the cost of more computation time. Please note
 that because both some heuristics and computation time are random, it is not guaranteed
-that a high-quality_factor call with always run slower or return a better solution than a
-low-quality_factor call, though this is almost always the case. Also note that an quality_factor of 100
-neither guarantees a solution which is optimal nor the best solution that can be found via
-extensive use of the methods in this package.
+that a call with a high `quality_factor` will always run slower or return a better solution than a
+call with a lower `quality_factor`, though this is almost always the case. Also note that a 
+`quality_factor` of 100 neither guarantees a solution which is optimal nor the best solution 
+that can be found via extensive use of the methods in this package.
 
 For more fine-grained control over the heuristics used, use heuristic methods such as
-`nearest_neighbor`,`farthest_insertion`, or `simulated_annealing`.
+`nearest_neighbor`, `farthest_insertion`, `two_opt`, and `simulated_annealing`.
 """
 function solve_tsp{T<:Real}(distmat::Matrix{T}; quality_factor::Real = 40.0)
 	if quality_factor < 0 || quality_factor > 100
