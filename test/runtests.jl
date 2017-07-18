@@ -157,6 +157,23 @@ function test_solve_tsp()
 	end
 end
 
+function test_two_opt()
+	n = 50
+	dm = generate_planar_distmat(n)
+	path = collect(1:n)
+	path_2opt, _ = two_opt(dm, path)
+	testpathvalidity(path_2opt, false)
+	# shouldn't affect endpoints
+	@test path_2opt[1] == 1
+	@test path_2opt[end] == n
+	cycle = vcat(path, 1)
+	cycle_2opt, _ = two_opt(dm, cycle)
+	testpathvalidity(cycle_2opt, true)
+	# same endpoints
+	@test cycle_2opt[1] == 1 == cycle_2opt[n+1]
+end
+	
+
 ###
 # run
 ###

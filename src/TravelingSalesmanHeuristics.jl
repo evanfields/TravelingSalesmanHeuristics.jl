@@ -333,17 +333,16 @@ function two_opt{T<:Real}(distmat::Matrix{T}, path::Vector{Int})
 	# if the path passed in is a loop (first/last nodes are the same)
 	# then we must keep these the endpoints of the path the same
 	# ie just keep it a loop, and therefore it doesn't matter which node is at the end
-	# if the path is not a cycle, we can do any reversing we like
-	isCycle = path[1] == path[end]
-	switchLow = isCycle ? 2 : 1
-	switchHigh = isCycle ? n - 1 : n
+	# if the path is not a cycle, we should respect the endpoints
+	switchLow = 2
+	switchHigh = n - 1
 	prevCost = Inf
 	curCost = pathcost(distmat, path)
 	while prevCost > pathcost(distmat, path)
 		prevCost = curCost
 		# we can't change the first 
 		for i in switchLow:(switchHigh-1)
-			for j in (i+1):switchHigh
+			for j in switchHigh:-1:(i+1)
 				altCost = pathcost_rev(distmat, path, i, j)
 				if altCost < curCost
 					curCost = altCost
