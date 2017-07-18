@@ -148,6 +148,15 @@ function test_path_costs()
 	end
 end
 
+function test_solve_tsp()
+	dm = rand(10,10)
+	quality_factors = [-1, 0, 1.1, 35, 101]
+	for qf in quality_factors
+		path, cost = solve_tsp(dm; quality_factor = qf)
+		testpathvalidity(path, true)
+	end
+end
+
 ###
 # run
 ###
@@ -158,4 +167,5 @@ test_farthest_insertion()
 test_simulated_annealing()
 test_bounds()
 test_path_costs()
+test_solve_tsp()
 println("Done testing.")

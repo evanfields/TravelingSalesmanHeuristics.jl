@@ -11,6 +11,7 @@ As of 2017-7-13, `TravelingSalesmanHeuristics` implements the nearest neighbor, 
 The documentation consists of this readme and detailed inline documentation for the exported functions `solve_tsp`, `nearest_neighbor`, `farthest_insertion`, `cheapest_insertion`, `two_opt`, `repetitive_heuristic`, and `simulated_annealing`. After installing the package, this inline documentation can be accessed at a Julia REPL, e.g.
 ```
 using TravelingSalesmanHeuristics
+?solve_tsp
 ?nearest_neighbor
 ```
 
@@ -24,7 +25,7 @@ Use of this package is most appropriate when you want decent solutions to small 
 A word of warning: the heuristics implemented are
 * heuristics, meaning you won't get any optimality guarantees and except on very small instances are unlikely to find the optimal tour;
 * general purpose, meaning they do not take advantage of any problem specific structure;
-* simple and (hopefully) readable but not terribly high performance, meaning you may have trouble with large instances. In particular the 2-opt path refinement strategy slows down noticeably when there are >400 cities.
+* simple and (hopefully) readable but not terribly high performance, meaning you may have trouble with large instances. In particular the two-opt path refinement strategy slows down noticeably when there are >400 cities.
 
 ### Installation ###
 Install the package by typing `Pkg.add("TravelingSalesmanHeuristics")` into a Julia REPL. Load it with `using TravelingSalesmanHeuristics`.
@@ -34,10 +35,11 @@ All problems are specified through a square distance matrix `D` where `D[i,j]` r
 
 We can generate a quick instance of the planar Euclidean TSP in the unit square as follows:
 ```
+srand(47)
 using Distances
-n = 20
+n = 50
 pts = rand(2, n)
-distmat = pairwise(Euclidean(), pts, pts)
+distmat = pairwise(Euclidean(), pts)
 ```
 
 To get a TSP solution in one line, use the `solve_tsp` function:
@@ -48,19 +50,40 @@ path, pathcost = solve_tsp(distmat)
 You should see some output like the following:
 ```
 julia> path, pathcost = solve_tsp(distmat)
-([6,16,13,20,12,17,1,4,14,3  …  2,10,11,19,7,5,15,9,18,6],3.359749477447318)
+([25, 12, 41, 48, 21, 22, 13, 3, 4, 19  …  35, 30, 31, 1, 5, 14, 46, 44, 39, 25], 5.954281044215408)
 ```
-Notice that the path starts and ends at city 6 and our cost is about 3.36.
+Notice that the path starts and ends at city 25 and our cost is about 5.95.
 
-For more detailed control over how your TSP instance is solved, use the `nearest_neighbor`, `cheapest_insertion`, `simulated_annealing`, or `two_opt` functions. For example, we might want to solve our TSP by doing cheapest insertion with a loop on city 1 as our initial path and then refine with 2-opt:
+You can vary the trade-off between solution time and solution quality with the `quality_factor` keyword:
+```
+julia> @time solve_tsp(distmat; quality_factor = 1)
+  0.000034 seconds (17 allocations: 3.281 KiB)
+([22, 21, 48, 41, 12, 25, 39, 44, 46, 14  …  31, 1, 27, 23, 17, 19, 4, 3, 13, 22], 5.960141233105482)
+
+julia> @time solve_tsp(distmat; quality_factor = 75)
+  0.010056 seconds (7.43 k allocations: 1.258 MiB)
+([28, 9, 42, 36, 32, 34, 47, 20, 27, 23  …  30, 35, 16, 2, 7, 33, 49, 45, 43, 28], 5.690542089798684)
+```
+
+For more detailed control over how your TSP instance is solved, use the `nearest_neighbor`, `farthest_insertion`, `cheapest_insertion`, `simulated_annealing`, or `two_opt` functions. For example, we might want to solve our TSP by doing cheapest insertion with a loop on city 1 as our initial path and then refine with two-opt:
 
 ```
-julia> path, pathcost = cheapest_insertion(distmat; firstcity = Nullable(1), do2opt = true)
+julia> path, pathcost = cheapest_insertion(distmat; firstcity = 1, do2opt = true)
 ([1,4,14,3,20,8,2,10,11,19  …  5,15,9,18,6,16,13,17,12,1],3.451385584282254)
 ```
+
+To call a heuristic repeatedly with every possible starting city, use `repetitive_heuristic`:
+```
+julia> nearest_neighbor(distmat; do2opt = true)
+([10, 15, 11, 37, 50, 18, 38, 29, 8, 25  …  35, 30, 31, 1, 5, 14, 40, 26, 6, 10], 5.912552858008369)
+
+julia> repetitive_heuristic(distmat, nearest_neighbor; do2opt = true)
+([13, 3, 4, 19, 17, 23, 27, 20, 47, 34  …  25, 39, 46, 44, 12, 41, 48, 21, 22, 13], 5.719611665246735)
+```
+Note that repetitive heuristics can be quite time consuming, especially if every returned path is refined with two-opt swaps. The repetition is threaded using `@threads`, so the time cost can be ameliorated somewhat by enabling multiple threads as described in [the manual](https://docs.julialang.org/en/stable/manual/parallel-computing/#Multi-Threading-(Experimental)-1).
 
 Finally, we may want to find a lower bound on the optimal cost:
 ```
 julia> lowerbound(distmat)
-2.801206595621498
+5.025702988391803
 ```

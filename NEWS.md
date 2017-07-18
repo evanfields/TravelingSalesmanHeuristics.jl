@@ -1,3 +1,6 @@
+## 2017-7-14 ##
+- `solve_tsp` accepts an optional `quality_factor` keyword specifying (without units or guarantees) the trade-off between computation time and solution quality.
+
 ## 2017-7-13 ##
 - Julia version 0.4 is no longer supported.
 - Introduced helper function `repetitive_heuristic(distmat, heuristic; keywords...)` for repeating a heuristic with many starting cities. The repetitition is parallelized with a `@threads` loop.
