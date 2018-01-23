@@ -23,7 +23,7 @@ tend to lead to better solutions found at the cost of more computation time.
 
 See also...
 """
-function solve_tsp{T<:Real}(distmat::Matrix{T}; quality_factor::Real = 40.0)
+function solve_tsp(distmat::AbstractMatrix{T}; quality_factor::Real = 40.0) where {T<:Real}
 	if quality_factor < 0 || quality_factor > 100
 		warn("quality_factor keyword passed to solve_tsp must be in [0,100]")
 		quality_factor = clamp(quality_factor, 0, 100)
@@ -98,11 +98,11 @@ symmetric and can contain negative values. Return a tuple `(path, pathcost)`.
 - `do2opt::Bool = true`: whether to refine the path found by 2-opt switches (corresponds to 
     removing path crossings in the planar Euclidean case).
 """
-function nearest_neighbor{T<:Real}(distmat::Matrix{T};
-							       firstcity::Union{Int, Nullable{Int}} = rand(1:size(distmat, 1)),
-							       repetitive::Bool = false,
-							       closepath::Bool = true,
-							       do2opt::Bool = true)
+function nearest_neighbor(distmat::AbstractMatrix{T} where {T<:Real};
+						  firstcity::Union{Int, Nullable{Int}} = rand(1:size(distmat, 1)),
+						  repetitive::Bool = false,
+						  closepath::Bool = true,
+						  do2opt::Bool = true)
 	# must have a square matrix 
 	numCities = check_square(distmat, "Must pass a square distance matrix to nearest_neighbor")
 	
@@ -169,11 +169,11 @@ be simply `[i, i]` for some city index `i` which corresponds to starting with a 
 
 Currently the implementation is a naive ``n^3`` algorithm.
 """
-function cheapest_insertion(distmat::Matrix{T} where T <: Real, initpath::AbstractArray{Int})
+function cheapest_insertion(distmat::AbstractMatrix{T}, initpath::AbstractVector{S}) where {T<:Real, S<:Integer}
 	check_square(distmat, "Distance matrix passed to cheapest_insertion must be square.")
 	
 	n = size(distmat, 1)
-	path = copy(initpath)
+	path = Vector{Int}(initpath)
 	
 	# collect cities to visited
 	visitus = setdiff(collect(1:n), initpath)
@@ -211,10 +211,10 @@ tuple `(path, cost)`.
     to random selection.
 - `do2opt::Bool = true`: whether to improve the path found by 2-opt swaps.
 """
-function cheapest_insertion{T<:Real}(distmat::Matrix{T};
-								     firstcity::Union{Int, Nullable{Int}} = rand(1:size(distmat, 1)),
-							         repetitive::Bool = false,
-								     do2opt::Bool = true)
+function cheapest_insertion(distmat::AbstractMatrix{T} where{T<:Real};
+							firstcity::Union{Int, Nullable{Int}} = rand(1:size(distmat, 1)),
+							repetitive::Bool = false,
+							do2opt::Bool = true)
 	#infer size
 	n = size(distmat, 1)
 
@@ -257,16 +257,17 @@ Return a tuple `(path, cost)`.
     to random selection.
 - `do2opt::Bool = true`: whether to improve the path by 2-opt swaps.
 """
-function farthest_insertion{T<:Real}(distmat::Matrix{T};
-                                     firstcity::Int = rand(1:size(distmat, 1)), do2opt::Bool = true)
+function farthest_insertion(distmat::AbstractMatrix{T};
+                            firstcity::Int = rand(1:size(distmat, 1)),
+							do2opt::Bool = true) where {T<:Real}
 	n = check_square(distmat, "Must pass square distance matrix to farthest_insertion.")
 	if firstcity < 1 || firstcity > n
-		error("First city for farthest_insertion must be in [1,..,n]")
+		error("First city for farthest_insertion must be in [1,...,n]")
 	end
 	smallval = minimum(distmat) - one(T) # will never be the max
 	
 	path = Int[firstcity, firstcity]
-	sizehint!(path, n)
+	sizehint!(path, n + 1)
 	dists_to_tour = (distmat[firstcity, :] + distmat[:, firstcity]) / 2
 	dists_to_tour[firstcity] = smallval
 	
@@ -315,7 +316,7 @@ end
 "perform 2-opt reversals until doing so does not improve the path cost
 
 First argument is the distance matrix, second is the path to be improved."
-function two_opt{T<:Real}(distmat::Matrix{T}, path::Vector{Int})
+function two_opt(distmat::AbstractMatrix{T}, path::AbstractVector{S}) where {T<:Real, S<:Integer}
 	# size checks
 	n = length(path)
 	if size(distmat, 1) != size(distmat, 2)

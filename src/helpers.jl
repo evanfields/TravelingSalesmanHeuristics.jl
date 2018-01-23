@@ -11,9 +11,10 @@ function check_square(m, msg)
 	return n
 end
 
-function repetitive_heuristic{T<:Real}(dm::Matrix{T},
-                                       heuristic::Function,
-                                       repetitive_kw = :firstcity; kwargs...)
+function repetitive_heuristic(dm::Matrix{T},
+                              heuristic::Function,
+                              repetitive_kw = :firstcity;
+							  kwargs...) where {T<:Real}
 	# call the heuristic with varying starting cities
 	n = size(dm, 1)
 	results_list = Vector{Tuple{Vector{Int}, T}}(n)
@@ -34,7 +35,8 @@ end
 # optionally specify the bounds for the subpath we want the cost of
 # defaults to the whole path
 # but when calculating reversed path costs can help to have subpath costs
-function pathcost{T<:Real}(distmat::Matrix{T}, path::Vector{Int}, lb::Int = 1, ub::Int = length(path))
+function pathcost(distmat::Matrix{T}, path::AbstractArray{S},
+                  lb::Int = 1, ub::Int = length(path)) where {T<:Real, S<:Integer}
 	cost = zero(T)
 	for i in lb:(ub - 1)
 		@inbounds cost += distmat[path[i], path[i+1]]
@@ -43,7 +45,8 @@ function pathcost{T<:Real}(distmat::Matrix{T}, path::Vector{Int}, lb::Int = 1, u
 end
 # calculate the cost of reversing part of a path
 # cost of walking along the entire path specified but reversing the sequence from revLow to revHigh, inclusive
-function pathcost_rev{T<:Real}(distmat::Matrix{T}, path::Vector{Int}, revLow::Int, revHigh::Int)
+function pathcost_rev(distmat::Matrix{T}, path::AbstractArray{S},
+                      revLow::Int, revHigh::Int) where {T<:Real, S<:Integer}
 	cost = zero(T)
 	# if there's an initial unreversed section
 	if revLow > 1
@@ -70,7 +73,7 @@ function pathcost_rev{T<:Real}(distmat::Matrix{T}, path::Vector{Int}, revLow::In
 end
 
 #Cost of inserting city `k` after index `after` in path `path` with costs `distmat`.
-function inscost(k::Int, after::Int, path::Vector{Int}, distmat::Matrix)
+function inscost(k::Int, after::Int, path::AbstractArray{S}, distmat::Matrix{T}) where {T<:Real, S<:Integer}
 	return distmat[path[after], k] + 
 		  distmat[k, path[after + 1]] -
 		  distmat[path[after], path[after + 1]]

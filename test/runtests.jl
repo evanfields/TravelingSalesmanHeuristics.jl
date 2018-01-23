@@ -172,7 +172,14 @@ function test_two_opt()
 	# same endpoints
 	@test cycle_2opt[1] == 1 == cycle_2opt[n+1]
 end
-	
+
+function test_atypical_types()
+	# rational distance matrix
+	dm = [rationalize(rand(); tol = .01) for i in 1:10, j in 1:10]
+	initpath = 1:2:9 # not a Vector, but <:AbstractVector{<:Int}
+	p, c = cheapest_insertion(dm, initpath)
+	testpathvalidity(p, false)
+end
 
 ###
 # run
@@ -185,4 +192,6 @@ test_simulated_annealing()
 test_bounds()
 test_path_costs()
 test_solve_tsp()
+test_two_opt()
+test_atypical_types()
 println("Done testing.")
