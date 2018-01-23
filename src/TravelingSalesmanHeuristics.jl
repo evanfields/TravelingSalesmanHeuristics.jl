@@ -21,9 +21,7 @@ tend to lead to better solutions found at the cost of more computation time.
     typically the case. A `quality_factor` of 100 neither guarantees an optimal solution
     nor the best solution  that can be found via extensive use of the methods in this package.
 
-For more fine-grained control over the heuristics used, use heuristic methods such as
-[`nearest_neighbor`](@ref), [`farthest_insertion`](@ref), [`two_opt`](@ref), and 
-[`simulated_annealing`](@ref).
+See also...
 """
 function solve_tsp{T<:Real}(distmat::Matrix{T}; quality_factor::Real = 40.0)
 	if quality_factor < 0 || quality_factor > 100
@@ -86,22 +84,19 @@ end
 ###
 
 """
-Approximately solve a TSP using the nearest neighbor heuristic. You must pass a square matrix
-distmat where distmat[i,j] represents the distance from city i to city j. The matrix needn't be
-symmetric and possibly could contain negative values, though nonpositive values have not been tested.
+    nearest_neighbor(distmat)
 
+Approximately solve a TSP using the nearest neighbor heuristic. `distmat` is a square real matrix 
+where distmat[i,j] represents the distance from city `i` to city `j`. The matrix needn't be
+symmetric and can contain negative values. Return a tuple `(path, pathcost)`.
 
-Optional arguments:
-
-firstCity (Int): specifies the city to begin the path on. Not specifying a value corresponds to random selection. 
-	
-closepath: boolean for whether to include the arc from the last city visited back to the first city in
-	cost calculations. If true, the first city appears first and last in the path. Defaults to true.
-	
-do2opt: whether to refine the path found by 2-opt switches (corresponds to removing path crossings in
-	the planar Euclidean case). Defaults to true.
-	
-returns a tuple (path, pathcost) where path is a Vector{Int} corresponding to the order of cities visited
+# Optional keyword arguments:
+- `firstcity::Int`: specifies the city to begin the path on. Not specifying a value corresponds
+    to random selection. 
+- `closepath::Bool = true`: whether to include the arc from the last city visited back to the
+    first city in cost calculations. If true, the first city appears first and last in the path.
+- `do2opt::Bool = true`: whether to refine the path found by 2-opt switches (corresponds to 
+    removing path crossings in the planar Euclidean case).
 """
 function nearest_neighbor{T<:Real}(distmat::Matrix{T};
 							       firstcity::Union{Int, Nullable{Int}} = rand(1:size(distmat, 1)),
@@ -161,17 +156,20 @@ function nearest_neighbor{T<:Real}(distmat::Matrix{T};
 end
 
 """
-.. cheapest_insertion(distmat, initpath) ..
+    cheapest_insertion(distmat::Matrix, initpath::AbstractArray{Int})
 
 
-Given a distance matrix and an initial path, complete the tour by
-repeatedly doing the cheapest insertion. The initial path must have length at least 2, but can be
-simply [i, i] for some city index i which corresponds to starting with a self-loop at city i.
-Insertions are always in the interior of the current path so this heuristic can also be used for
-non-closed TSP paths.
-Currently the implementation is a naive n^3 algorithm.
+Given a distance matrix and an initial path, complete the tour by repeatedly doing the cheapest 
+insertion. Return a tuple `(path, cost)`. The initial path must have length at least 2, but can
+be simply `[i, i]` for some city index `i` which corresponds to starting with a loop at city `i`.
+
+!!! note
+    Insertions are always in the interior of the current path so this heuristic can also be used for
+    non-closed TSP paths.
+
+Currently the implementation is a naive ``n^3`` algorithm.
 """
-function cheapest_insertion{T<:Real}(distmat::Matrix{T}, initpath::Vector{Int})
+function cheapest_insertion(distmat::Matrix{T} where T <: Real, initpath::AbstractArray{Int})
 	check_square(distmat, "Distance matrix passed to cheapest_insertion must be square.")
 	
 	n = size(distmat, 1)
@@ -202,18 +200,16 @@ function cheapest_insertion{T<:Real}(distmat::Matrix{T}, initpath::Vector{Int})
 	return (path, pathcost(distmat, path))
 end
 """
-.. cheapest_insertion(distmat; ...) ..
+    cheapest_insertion(distmat; ...)
 
 
-Cheapest insertion with a self-loop as the initial path. 
-`distmat` must be a square real matrix. Non-symmetric distance matrices are fine; negative
-distances have not been tested but should also work.
+Complete a tour using cheapest insertion with a single-city loop as the initial path. Return a
+tuple `(path, cost)`.
 
-Optional arguments:
-
-firstCity (Int): specifies the city to begin the path on. Not specifying a value corresponds to random selection.
-
-do2opt: boolean for whether to improve the paths found by 2-opt swaps. Defaults to true.
+### Optional keyword arguments:
+- `firstCity::Int`: specifies the city to begin the path on. Not specifying a value corresponds
+    to random selection.
+- `do2opt::Bool = true`: whether to improve the path found by 2-opt swaps.
 """
 function cheapest_insertion{T<:Real}(distmat::Matrix{T};
 								     firstcity::Union{Int, Nullable{Int}} = rand(1:size(distmat, 1)),
@@ -251,15 +247,16 @@ function cheapest_insertion{T<:Real}(distmat::Matrix{T};
 end
 
 """
-.. farthest_insertion(distmat; ...) ..
+    farthest_insertion(distmat; ...)
 
-Farthest insertion strategy for path generation. `distmat` must be a square real matrix but need not be symmetric.
+Generate a TSP path using the farthest insertion strategy. `distmat` must be a square real matrix.
+Return a tuple `(path, cost)`.
 
-Optional arguments:
-
-firstCity (Int): specifies the city to begin the path on. Not specifying a value corresponds to random selection.
-
-do2opt (Bool): whether to improve the path by 2-opt swaps. Defaults to true."""
+### Optional arguments:
+- `firstCity::Int`: specifies the city to begin the path on. Not specifying a value corresponds
+    to random selection.
+- `do2opt::Bool = true`: whether to improve the path by 2-opt swaps.
+"""
 function farthest_insertion{T<:Real}(distmat::Matrix{T};
                                      firstcity::Int = rand(1:size(distmat, 1)), do2opt::Bool = true)
 	n = check_square(distmat, "Must pass square distance matrix to farthest_insertion.")
