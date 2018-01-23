@@ -5,11 +5,11 @@
 # the cost of the cheapest edge leaving that vertex
 # likewise for the cheapest edge entering that vertex
 # since we must go to and leave each vertex
-function vertwise_bound(distmat)
+function vertwise_bound(distmat::AbstractMatrix{T}) where {T<:Real}
 	# the simple code below would tend to pick out the 0 costs on the diagonal
 	# so make a doctored copy of the distance matrix with high costs on the diagonal
 	m = maximum(distmat)
-	distmat_nodiag = distmat + m * eye(distmat)
+	distmat_nodiag = distmat + m * I
 	leaving = sum(minimum(distmat_nodiag, 2))
 	entering = sum(minimum(distmat_nodiag, 1))
 	return maximum([leaving, entering])
@@ -19,7 +19,7 @@ end
 # returns a (n-1) long Vector of Tuple{Int, Int} where each tuple is an edge in the MST
 # and the total weight of the tree
 # the matrix passed in must be symmetric or you won't get out the minimum spanning tree
-function minspantree{T<:Real}(dm::AbstractMatrix{T}) # accepts views
+function minspantree(dm::AbstractMatrix{T}) where {T<:Real} # accepts views
 	mst_edges = Vector{Tuple{Int, Int}}()
 	mst_cost = zero(T)
 	n = size(dm, 1)
@@ -68,7 +68,7 @@ end
 # the left out vert is a lower bound
 # for extra simplicity, the distance matrix is modified to be symmetric so we can treat
 # the underlying graph as undirected. This also doesn't help the bound!
-function hkinspired_bound{T<:Real}(distmat::AbstractMatrix{T})
+function hkinspired_bound(distmat::AbstractMatrix{T}) where {T<:Real}
 	n = size(distmat, 1)
 	if size(distmat, 2) != n
 		error("Must pass square distance matrix to hkinspired_bound")
