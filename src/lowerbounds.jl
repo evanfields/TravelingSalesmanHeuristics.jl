@@ -111,10 +111,19 @@ end
 
 # best lower bound we have
 """
+    lowerbound(distmat)
+
 Lower bound the cost of the optimal TSP tour. At present, the bounds considered
 are a simple bound based on the minimum cost of entering and exiting each city and
 a slightly better bound inspired by the Held-Karp bounds; note that the implementation
 here is simpler and less tight than proper HK bounds.
+
+The Held-Karp-inspired bound requires computing many spanning trees. For a faster but
+typically looser bound, use `TravelingSalesmanHeuristics.vertwise_bound(distmat)`.
+
+!!! warning
+    The spanning tree bounds used in this function are only correct on symmetric problem
+    instances. For non-symmetric instances, use `TravelingSalesmanHeuristics.vertwise_bound`.
 """
 function lowerbound{T<:Real}(distmat::AbstractMatrix{T})
 	return max(vertwise_bound(distmat), hkinspired_bound(distmat))

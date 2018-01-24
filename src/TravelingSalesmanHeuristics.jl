@@ -313,9 +313,17 @@ end
 # path improvement heuristics
 ###
 
-"perform 2-opt reversals until doing so does not improve the path cost
+"""
+    two_opt(distmat, path)
 
-First argument is the distance matrix, second is the path to be improved."
+Improve `path` by doing 2-opt switches (i.e. reversing part of the path) until doing so no
+longer reduces the cost. Return a tuple `(improved_path, improved_cost)`.
+
+On large problem instances this heuristic can be slow, but it is highly recommended on small and
+medium problem instances.
+
+See also `simulated_annealing` for another path generation heuristic.
+"""
 function two_opt(distmat::AbstractMatrix{T}, path::AbstractVector{S}) where {T<:Real, S<:Integer}
 	# size checks
 	n = length(path)
