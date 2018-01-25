@@ -10,3 +10,11 @@ makedocs(
 	]
 )
 
+deploydocs(
+    repo   = "github.com/evanfields/TravelingSalesmanHeuristics.jl.git",
+    target = "build",
+    deps   = nothing,
+    make   = nothing,
+	julia  = "0.6",
+	osname = "linux"
+)
