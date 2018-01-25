@@ -18,10 +18,11 @@ decays exponentially from `init_temp` to `final_temp`. Return a tuple `(path, co
     A Nullable{Vector{Int}}. An empty Nullable corresponds to picking a random path; if the 
     Nullable contains a value then this path will be used. Defaults to a random path.
 """
-function simulated_annealing{T <: Real}(distmat::Matrix{T}; steps = 50*length(distmat),
-										num_starts = 1,
-										init_temp = exp(8), final_temp = exp(-6.5),
-										init_path::Nullable{Vector{Int}} = Nullable{Vector{Int}}())
+function simulated_annealing(distmat::Matrix{T} where {T<:Real};
+                             steps = 50*length(distmat),
+							 num_starts = 1,
+							 init_temp = exp(8), final_temp = exp(-6.5),
+							 init_path::Nullable{Vector{Int}} = Nullable{Vector{Int}}())
 
 	# check inputs
 	check_square(distmat, "Must pass a square distance matrix to simulated_annealing.")
@@ -57,8 +58,8 @@ function simulated_annealing{T <: Real}(distmat::Matrix{T}; steps = 50*length(di
 		return path, cost_cur
 	end
 
-	path, cost = sahelper()
-	for _ in 2:num_starts
+	path, cost = initpath, pathcost(distmat, initpath)
+	for _ in 1:num_starts
 		otherpath, othercost = sahelper()
 		if othercost < cost
 			cost = othercost
