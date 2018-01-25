@@ -121,10 +121,15 @@ here is simpler and less tight than proper HK bounds.
 The Held-Karp-inspired bound requires computing many spanning trees. For a faster but
 typically looser bound, use `TravelingSalesmanHeuristics.vertwise_bound(distmat)`.
 
-!!! warning
-    The spanning tree bounds used in this function are only correct on symmetric problem
-    instances. For non-symmetric instances, use `TravelingSalesmanHeuristics.vertwise_bound`.
+!!! note
+    The spanning tree bounds are only correct on symmetric problem instances and will not be
+    used if the passed `distmat` is not symmetric. If you wish to use these bounds anyway,
+    (e.g. for near-symmetric instances), use `TravelingSalesmanHeuristics.hkinspired_bound`.
 """
-function lowerbound{T<:Real}(distmat::AbstractMatrix{T})
-	return max(vertwise_bound(distmat), hkinspired_bound(distmat))
+function lowerbound(distmat::AbstractMatrix{T} where {T<:Real})
+	vb = vertwise_bound(distmat)
+	if !issymmetric(distmat)
+		return vb
+	end
+	return max(vb, hkinspired_bound(distmat))
 end

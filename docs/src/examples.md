@@ -82,7 +82,7 @@ path_sa, cost_sa = simulated_annealing(distmat; init_path = Nullable(path_quick)
 ```
 
 ## Lower bounds
-In the previous section, we generated a 300 point TSP in the unit square. Is the solution we with cost about `13.3` any good? We can get a rough lower bound:
+In the previous section, we generated a 300 point TSP in the unit square. Is the above solution with cost about `13.3` any good? We can get a rough lower bound:
 ```
 lowerbound(distmat)
     11.5998918075456
