@@ -14,7 +14,7 @@ A word of warning: the heuristics implemented are
 * simple and (hopefully) readable but not terribly high performance, meaning you may have trouble with large instances. In particular the two-opt path refinement strategy slows down noticeably when there are >400 cities.
 
 ## Installation
-`TravelingSalesmanHeuristics` is a registered package, so you can install it with `Pkg.add("TravelingSalesmanHeuristics")`.
+`TravelingSalesmanHeuristics` is a registered package, so you can install it with `Pkg.add("TravelingSalesmanHeuristics")`. Load it with `using TravelingSalesmanHeuristics`.
 
 ## Usage
 All problems are specified through a square distance matrix `D` where `D[i,j]` represents the cost of traveling from the `i`-th to the `j`-th city. Your distance matrix need not be symmetric and could probably even contain negative values, though I make no guarantee about behavior when using negative values.

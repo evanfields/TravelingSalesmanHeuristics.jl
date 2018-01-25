@@ -1,3 +1,9 @@
+## 208-1-25 ##
+- The package now has proper documentation (built with Documenter).
+- A wider variety of types should be supported; e.g. your distance matrix can have `Rational` arguments, initial paths can be `AbstractVectors`, etc.
+- `simulated_annealing` will no longer sometimes return a worse path than you pass it.
+- `lowerbound` checks that your problem instance is symmetric before using spanning tree bounds.
+
 ## 2017-7-14 ##
 - `solve_tsp` accepts an optional `quality_factor` keyword specifying (without units or guarantees) the trade-off between computation time and solution quality.
 
