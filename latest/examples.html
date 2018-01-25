@@ -32,7 +32,7 @@ path_fi2opt, cost_fi2opt = farthest_insertion(distmat; firstcity = 1, do2opt = t
 path_quick, cost_quick = solve_tsp(distmat)
     ([104, 185, 290, 91, 294, 269, 40, 205, 121, 271  …  156, 237, 97, 288, 137, 63, 257, 168, 14, 104], 13.568672416542647)
 path_sa, cost_sa = simulated_annealing(distmat; init_path = Nullable(path_quick), num_starts = 10)
-    ([104, 14, 168, 257, 63, 137, 46, 101, 44, 193  …  220, 269, 40, 121, 205, 294, 91, 290, 185, 104], 13.298439981448235)</code></pre><h2><a class="nav-anchor" id="Lower-bounds-1" href="#Lower-bounds-1">Lower bounds</a></h2><p>In the previous section, we generated a 300 point TSP in the unit square. Is the solution we with cost about <code>13.3</code> any good? We can get a rough lower bound:</p><pre><code class="language-none">lowerbound(distmat)
+    ([104, 14, 168, 257, 63, 137, 46, 101, 44, 193  …  220, 269, 40, 121, 205, 294, 91, 290, 185, 104], 13.298439981448235)</code></pre><h2><a class="nav-anchor" id="Lower-bounds-1" href="#Lower-bounds-1">Lower bounds</a></h2><p>In the previous section, we generated a 300 point TSP in the unit square. Is the above solution with cost about <code>13.3</code> any good? We can get a rough lower bound:</p><pre><code class="language-none">lowerbound(distmat)
     11.5998918075456</code></pre><p>Let&#39;s see where that bound came from:</p><pre><code class="language-none">TravelingSalesmanHeuristics.vertwise_bound(distmat)
     8.666013688087942
 TravelingSalesmanHeuristics.hkinspired_bound(distmat)
