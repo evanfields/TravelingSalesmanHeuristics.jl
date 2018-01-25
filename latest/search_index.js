@@ -29,7 +29,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Installation",
     "category": "section",
-    "text": "TravelingSalesmanHeuristics is a registered package, so you can install it with Pkg.add(\"TravelingSalesmanHeuristics\")."
+    "text": "TravelingSalesmanHeuristics is a registered package, so you can install it with Pkg.add(\"TravelingSalesmanHeuristics\"). Load it with using TravelingSalesmanHeuristics."
 },
 
 {
