@@ -7,21 +7,21 @@ include("lowerbounds.jl")
 export solve_tsp, lowerbound, repetitive_heuristic, two_opt,
        nearest_neighbor, cheapest_insertion, simulated_annealing, farthest_insertion
 """
-.. solve_tsp(distmat) ..
+    solve_tsp(distmat; quality_factor = 40)
 
-Simple one-line call to approximately solving a TSP by specifying a distance matrix.
+Approximately solve a TSP by specifying a distance matrix. Return a tuple `(path, cost)`.
 
 The optional keyword `quality_factor` (real number in [0,100]; defaults to 40) specifies the
 tradeoff between computation time and quality of solution returned. Higher values
-tend to lead to better solutions found at the cost of more computation time. Please note
-that because both some heuristics and computation time are random, it is not guaranteed
-that a call with a high `quality_factor` will always run slower or return a better solution than a
-call with a lower `quality_factor`, though this is almost always the case. Also note that a 
-`quality_factor` of 100 neither guarantees a solution which is optimal nor the best solution 
-that can be found via extensive use of the methods in this package.
+tend to lead to better solutions found at the cost of more computation time. 
 
-For more fine-grained control over the heuristics used, use heuristic methods such as
-`nearest_neighbor`, `farthest_insertion`, `two_opt`, and `simulated_annealing`.
+!!! note
+    It is not guaranteed that a call with a high `quality_factor` will always run slower or 
+    return a better solution than a call with a lower `quality_factor`, though this is 
+    typically the case. A `quality_factor` of 100 neither guarantees an optimal solution
+    nor the best solution  that can be found via extensive use of the methods in this package.
+
+See also...
 """
 function solve_tsp(distmat::AbstractMatrix{T}; quality_factor::Real = 40.0) where {T<:Real}
 	if quality_factor < 0 || quality_factor > 100
@@ -84,22 +84,19 @@ end
 ###
 
 """
-Approximately solve a TSP using the nearest neighbor heuristic. You must pass a square matrix
-distmat where distmat[i,j] represents the distance from city i to city j. The matrix needn't be
-symmetric and possibly could contain negative values, though nonpositive values have not been tested.
+    nearest_neighbor(distmat)
 
+Approximately solve a TSP using the nearest neighbor heuristic. `distmat` is a square real matrix 
+where distmat[i,j] represents the distance from city `i` to city `j`. The matrix needn't be
+symmetric and can contain negative values. Return a tuple `(path, pathcost)`.
 
-Optional arguments:
-
-firstCity (Int): specifies the city to begin the path on. Not specifying a value corresponds to random selection. 
-	
-closepath: boolean for whether to include the arc from the last city visited back to the first city in
-	cost calculations. If true, the first city appears first and last in the path. Defaults to true.
-	
-do2opt: whether to refine the path found by 2-opt switches (corresponds to removing path crossings in
-	the planar Euclidean case). Defaults to true.
-	
-returns a tuple (path, pathcost) where path is a Vector{Int} corresponding to the order of cities visited
+# Optional keyword arguments:
+- `firstcity::Int`: specifies the city to begin the path on. Not specifying a value corresponds
+    to random selection. 
+- `closepath::Bool = true`: whether to include the arc from the last city visited back to the
+    first city in cost calculations. If true, the first city appears first and last in the path.
+- `do2opt::Bool = true`: whether to refine the path found by 2-opt switches (corresponds to 
+    removing path crossings in the planar Euclidean case).
 """
 function nearest_neighbor(distmat::AbstractMatrix{T} where {T<:Real};
 						  firstcity::Union{Int, Nullable{Int}} = rand(1:size(distmat, 1)),
@@ -159,15 +156,18 @@ function nearest_neighbor(distmat::AbstractMatrix{T} where {T<:Real};
 end
 
 """
-.. cheapest_insertion(distmat, initpath) ..
+    cheapest_insertion(distmat::Matrix, initpath::AbstractArray{Int})
 
 
-Given a distance matrix and an initial path, complete the tour by
-repeatedly doing the cheapest insertion. The initial path must have length at least 2, but can be
-simply [i, i] for some city index i which corresponds to starting with a self-loop at city i.
-Insertions are always in the interior of the current path so this heuristic can also be used for
-non-closed TSP paths.
-Currently the implementation is a naive n^3 algorithm.
+Given a distance matrix and an initial path, complete the tour by repeatedly doing the cheapest 
+insertion. Return a tuple `(path, cost)`. The initial path must have length at least 2, but can
+be simply `[i, i]` for some city index `i` which corresponds to starting with a loop at city `i`.
+
+!!! note
+    Insertions are always in the interior of the current path so this heuristic can also be used for
+    non-closed TSP paths.
+
+Currently the implementation is a naive ``n^3`` algorithm.
 """
 function cheapest_insertion(distmat::AbstractMatrix{T}, initpath::AbstractVector{S}) where {T<:Real, S<:Integer}
 	check_square(distmat, "Distance matrix passed to cheapest_insertion must be square.")
@@ -200,18 +200,16 @@ function cheapest_insertion(distmat::AbstractMatrix{T}, initpath::AbstractVector
 	return (path, pathcost(distmat, path))
 end
 """
-.. cheapest_insertion(distmat; ...) ..
+    cheapest_insertion(distmat; ...)
 
 
-Cheapest insertion with a self-loop as the initial path. 
-`distmat` must be a square real matrix. Non-symmetric distance matrices are fine; negative
-distances have not been tested but should also work.
+Complete a tour using cheapest insertion with a single-city loop as the initial path. Return a
+tuple `(path, cost)`.
 
-Optional arguments:
-
-firstCity (Int): specifies the city to begin the path on. Not specifying a value corresponds to random selection.
-
-do2opt: boolean for whether to improve the paths found by 2-opt swaps. Defaults to true.
+### Optional keyword arguments:
+- `firstCity::Int`: specifies the city to begin the path on. Not specifying a value corresponds
+    to random selection.
+- `do2opt::Bool = true`: whether to improve the path found by 2-opt swaps.
 """
 function cheapest_insertion(distmat::AbstractMatrix{T} where{T<:Real};
 							firstcity::Union{Int, Nullable{Int}} = rand(1:size(distmat, 1)),
@@ -249,15 +247,16 @@ function cheapest_insertion(distmat::AbstractMatrix{T} where{T<:Real};
 end
 
 """
-.. farthest_insertion(distmat; ...) ..
+    farthest_insertion(distmat; ...)
 
-Farthest insertion strategy for path generation. `distmat` must be a square real matrix but need not be symmetric.
+Generate a TSP path using the farthest insertion strategy. `distmat` must be a square real matrix.
+Return a tuple `(path, cost)`.
 
-Optional arguments:
-
-firstCity (Int): specifies the city to begin the path on. Not specifying a value corresponds to random selection.
-
-do2opt (Bool): whether to improve the path by 2-opt swaps. Defaults to true."""
+### Optional arguments:
+- `firstCity::Int`: specifies the city to begin the path on. Not specifying a value corresponds
+    to random selection.
+- `do2opt::Bool = true`: whether to improve the path by 2-opt swaps.
+"""
 function farthest_insertion(distmat::AbstractMatrix{T};
                             firstcity::Int = rand(1:size(distmat, 1)),
 							do2opt::Bool = true) where {T<:Real}
@@ -314,9 +313,17 @@ end
 # path improvement heuristics
 ###
 
-"perform 2-opt reversals until doing so does not improve the path cost
+"""
+    two_opt(distmat, path)
 
-First argument is the distance matrix, second is the path to be improved."
+Improve `path` by doing 2-opt switches (i.e. reversing part of the path) until doing so no
+longer reduces the cost. Return a tuple `(improved_path, improved_cost)`.
+
+On large problem instances this heuristic can be slow, but it is highly recommended on small and
+medium problem instances.
+
+See also `simulated_annealing` for another path generation heuristic.
+"""
 function two_opt(distmat::AbstractMatrix{T}, path::AbstractVector{S}) where {T<:Real, S<:Integer}
 	# size checks
 	n = length(path)

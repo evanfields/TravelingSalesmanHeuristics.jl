@@ -1,27 +1,22 @@
 # this file contains code for the simulated annealing TSP heuristic
 
 """
-.. simulated_annealing(distmat; ...) ..
+  simulated_annealing(distmat; ...)
 
 Use a simulated annealing strategy to return a closed tour. The temperature
-decays exponentially from init_temp to final_temp.
+decays exponentially from `init_temp` to `final_temp`. Return a tuple `(path, cost)`.
 
-Optional arguments:
-
-- steps: number of steps to take; defaults to 50n^2 where n is number of cities
-
-- num_starts: number of times to run the simulated annealing algorithm, each time
-	starting with a random path. Defaults to 1.
-
-- init_temp: initial temperature which controls initial chance of accepting an
+### Optional keyword arguments:
+- `steps::Int = 50n^2`: number of steps to take; defaults to 50n^2 where n is number of cities
+- `num_starts::Int = 1`: number of times to run the simulated annealing algorithm, each time
+    starting with a random path, or `init_path` if non-null. Defaults to 1.
+- `init_temp::Real = exp(8)`: initial temperature which controls initial chance of accepting an
 	inferior tour.
-
-- final_temp: final temperature which controls final chance of accepting an
-	inferior tour; lower values roughly correspond to a longer period of 2-opt.
-
-- init_path: path to start the annealing from. A Nullable{Vector{Int}}. An empty
-	Nullable corresponds to picking a random path; if the Nullable contains a value
-	then this path will be used. Defaults to a random path.
+- `final_temp::Real = exp(-6.5)` final temperature which controls final chance of accepting an
+    inferior tour; lower values roughly correspond to a longer period of 2-opt.
+- `init_path::Nullable{vector{Int}} = Nullable{Vector{Int}}()`: path to start the annealing from.
+    A Nullable{Vector{Int}}. An empty Nullable corresponds to picking a random path; if the 
+    Nullable contains a value then this path will be used. Defaults to a random path.
 """
 function simulated_annealing{T <: Real}(distmat::Matrix{T}; steps = 50*length(distmat),
 										num_starts = 1,
