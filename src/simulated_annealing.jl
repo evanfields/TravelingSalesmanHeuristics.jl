@@ -25,7 +25,7 @@ function simulated_annealing(distmat::Matrix{T} where {T<:Real};
 							 init_path::Nullable{Vector{Int}} = Nullable{Vector{Int}}())
 
 	# check inputs
-	check_square(distmat, "Must pass a square distance matrix to simulated_annealing.")
+	n = check_square(distmat, "Must pass a square distance matrix to simulated_annealing.")
 	
 	# cooling rate: we multiply by a constant mult each step
 	cool_rate = (final_temp / init_temp)^(1 / (steps - 1))
@@ -58,7 +58,8 @@ function simulated_annealing(distmat::Matrix{T} where {T<:Real};
 		return path, cost_cur
 	end
 
-	path, cost = initpath, pathcost(distmat, initpath)
+	path = isnull(init_path) ? randpath(n) : get(init_path)
+	cost = pathcost(distmat, path)
 	for _ in 1:num_starts
 		otherpath, othercost = sahelper()
 		if othercost < cost
