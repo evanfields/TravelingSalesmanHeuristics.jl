@@ -1,4 +1,4 @@
-## 208-1-25 ##
+## 2018-1-25 ##
 - The package now has proper documentation (built with Documenter).
 - A wider variety of types should be supported; e.g. your distance matrix can have `Rational` arguments, initial paths can be `AbstractVectors`, etc.
 - `simulated_annealing` will no longer sometimes return a worse path than you pass it.
