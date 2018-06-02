@@ -11,9 +11,13 @@ function check_square(m, msg)
 	return n
 end
 
-"Check that an array of integers is a valid circuit. A valid circuit over $n$ locations has
-length $n+1$. The first $n$ entries are a permutation of $1, \ldots, n$, and the $(n+1)$-st entry
-is equal to the first entry."
+"""
+    check_valid_circuit(circuit::AbstractArray{<:Integer})
+
+Check that an array of integers is a valid circuit. A valid circuit over `n` locations has
+length `n+1`. The first `n` entries are a permutation of `1, ..., n`, and the `(n+1)`-st entry
+is equal to the first entry.
+"""
 function check_valid_circuit(circuit)
 	n = length(circuit) - 1
 	return circuit[1] == circuit[end] && sort(circuit[1:(end-1)]) == 1:n
