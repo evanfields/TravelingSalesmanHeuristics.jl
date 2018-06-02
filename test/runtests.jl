@@ -184,6 +184,7 @@ end
 ###
 # run
 ###
+println("Hello tester")
 srand(47)
 test_nearest_neighbor()
 test_cheapest_insertion()

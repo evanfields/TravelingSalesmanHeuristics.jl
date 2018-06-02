@@ -11,18 +11,18 @@ decays exponentially from `init_temp` to `final_temp`. Return a tuple `(path, co
 - `num_starts::Int = 1`: number of times to run the simulated annealing algorithm, each time
     starting with a random path, or `init_path` if non-null. Defaults to 1.
 - `init_temp::Real = exp(8)`: initial temperature which controls initial chance of accepting an
-	inferior tour.
+    inferior tour.
 - `final_temp::Real = exp(-6.5)` final temperature which controls final chance of accepting an
     inferior tour; lower values roughly correspond to a longer period of 2-opt.
-- `init_path::Nullable{vector{Int}} = Nullable{Vector{Int}}()`: path to start the annealing from.
-    A Nullable{Vector{Int}}. An empty Nullable corresponds to picking a random path; if the 
-    Nullable contains a value then this path will be used. Defaults to a random path.
+- `init_path::Union{Vector{Int}, Nothing} = nothing`: path to start the annealing from.
+    Either a `Vector{Int}` or `nothing`. If a `Vector{Int}` is given, it will be used as the initial path;
+    otherwise a random initial path is used.
 """
 function simulated_annealing(distmat::Matrix{T} where {T<:Real};
                              steps = 50*length(distmat),
 							 num_starts = 1,
 							 init_temp = exp(8), final_temp = exp(-6.5),
-							 init_path::Nullable{Vector{Int}} = Nullable{Vector{Int}}())
+							 init_path::Union{Vector{Int}, Nothing} = nothing)
 
 	# check inputs
 	n = check_square(distmat, "Must pass a square distance matrix to simulated_annealing.")
@@ -30,11 +30,10 @@ function simulated_annealing(distmat::Matrix{T} where {T<:Real};
 	# cooling rate: we multiply by a constant mult each step
 	cool_rate = (final_temp / init_temp)^(1 / (steps - 1))
 
-	# do SA with a single starting location
-	function sahelper()
+	# do SA with a single starting path
+	function sahelper!(path)
 		temp = init_temp / cool_rate # divide by cool_rate so when we first multiply we get init_temp
 		n = size(distmat, 1)
-		path = isnull(init_path) ? randpath(n) : copy(get(init_path))
 		cost_cur = pathcost(distmat, path)
 
 		for i in 1:steps
@@ -58,10 +57,19 @@ function simulated_annealing(distmat::Matrix{T} where {T<:Real};
 		return path, cost_cur
 	end
 
-	path = isnull(init_path) ? randpath(n) : get(init_path)
-	cost = pathcost(distmat, path)
+	# unpack the initial path
+	if init_path == nothing
+		randstart = true
+	else
+		if !legal_circuit(init_path)
+			error("The init_path passed to simulated_annealing must be a legal circuit.")
+		end
+		randstart = false
+	end
+	cost = randstart ? pathcost(distmat, randpath(n)) : pathcost(distmat, init_path)
 	for _ in 1:num_starts
-		otherpath, othercost = sahelper()
+		path_this_start = randstart ? randpath(n) : deepcopy(init_path)
+		otherpath, othercost = sahelper!(path_this_start)
 		if othercost < cost
 			cost = othercost
 			path = otherpath
