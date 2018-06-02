@@ -218,7 +218,7 @@ function cheapest_insertion(distmat::AbstractMatrix{T} where{T<:Real};
 							repetitive::Bool = false,
 							do2opt::Bool = true)
 	#infer size
-	n = size(distmat, 1)
+	num_cities = size(distmat, 1)
 
 	# calling with KW repetitive is deprecated; pass the call to repetitive_heuristic
 	if repetitive
