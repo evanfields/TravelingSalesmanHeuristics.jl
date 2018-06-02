@@ -1,5 +1,7 @@
 module TravelingSalesmanHeuristics
 
+using Random, LinearAlgebra
+
 include("helpers.jl")
 include("simulated_annealing.jl")
 include("lowerbounds.jl")
@@ -25,7 +27,7 @@ See also...
 """
 function solve_tsp(distmat::AbstractMatrix{T}; quality_factor::Real = 40.0) where {T<:Real}
 	if quality_factor < 0 || quality_factor > 100
-		warn("quality_factor keyword passed to solve_tsp must be in [0,100]")
+		@warn "quality_factor keyword passed to solve_tsp must be in [0,100]"
 		quality_factor = clamp(quality_factor, 0, 100)
 	end
 	
@@ -67,7 +69,7 @@ function solve_tsp(distmat::AbstractMatrix{T}; quality_factor::Real = 40.0) wher
 	
 	# simulated annealing refinement, seeded with best so far
 	if quality_factor >= 80
-		_, bestind = findmin(pc[2] for pc in answers)
+		_, bestind = findmin([pc[2] for pc in answers])
 		bestpath, bestcost = answers[bestind]
 		nstart = ceil(Int, (quality_factor - 79)/5)
 		push!(answers,
@@ -76,7 +78,7 @@ function solve_tsp(distmat::AbstractMatrix{T}; quality_factor::Real = 40.0) wher
 	end
 	
 	# pick best
-	_, bestind = findmin(pc[2] for pc in answers)
+	_, bestind = findmin([pc[2] for pc in answers])
 	return answers[bestind]
 end
 
@@ -120,7 +122,7 @@ function nearest_neighbor(distmat::AbstractMatrix{T} where {T<:Real};
 	
 	# calling with KW repetitive is deprecated; pass the call to repetitive_heuristic
 	if repetitive
-		warn("Calling `nearest_neighbor` with keyword `repetitive` is deprecated;'" *
+		@warn ("Calling `nearest_neighbor` with keyword `repetitive` is deprecated;'" *
 		     " instead call `repetitive_heuristic(distmat, nearest_neighbor; kwargs...)`")
 		return repetitive_heuristic(distmat, nearest_neighbor;
 		                            closepath = closepath, do2opt = do2opt)
@@ -222,8 +224,8 @@ function cheapest_insertion(distmat::AbstractMatrix{T} where{T<:Real};
 
 	# calling with KW repetitive is deprecated; pass the call to repetitive_heuristic
 	if repetitive
-		warn("Calling `cheapest_insertionr` with keyword `repetitive` is deprecated;'" *
-		     " instead call `repetitive_heuristic(distmat, cheapest_insertion; kwargs...)`")
+		@warn "Calling `cheapest_insertionr` with keyword `repetitive` is deprecated;'" *
+		     " instead call `repetitive_heuristic(distmat, cheapest_insertion; kwargs...)`"
 		return repetitive_heuristic(distmat, cheapest_insertion; do2opt = do2opt)
 	end
 	

@@ -60,13 +60,15 @@ function simulated_annealing(distmat::Matrix{T} where {T<:Real};
 	# unpack the initial path
 	if init_path == nothing
 		randstart = true
+		path = randpath(n)
 	else
 		if !legal_circuit(init_path)
 			error("The init_path passed to simulated_annealing must be a legal circuit.")
 		end
 		randstart = false
+		path = init_path
 	end
-	cost = randstart ? pathcost(distmat, randpath(n)) : pathcost(distmat, init_path)
+	cost = pathcost(distmat, path)
 	for _ in 1:num_starts
 		path_this_start = randstart ? randpath(n) : deepcopy(init_path)
 		otherpath, othercost = sahelper!(path_this_start)

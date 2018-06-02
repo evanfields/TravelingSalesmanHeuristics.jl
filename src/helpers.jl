@@ -12,13 +12,13 @@ function check_square(m, msg)
 end
 
 """
-    check_valid_circuit(circuit::AbstractArray{<:Integer})
+    legal_circuit(circuit::AbstractArray{<:Integer})
 
 Check that an array of integers is a valid circuit. A valid circuit over `n` locations has
 length `n+1`. The first `n` entries are a permutation of `1, ..., n`, and the `(n+1)`-st entry
 is equal to the first entry.
 """
-function check_valid_circuit(circuit)
+function legal_circuit(circuit)
 	n = length(circuit) - 1
 	return circuit[1] == circuit[end] && sort(circuit[1:(end-1)]) == 1:n
 end
@@ -44,7 +44,7 @@ function repetitive_heuristic(dm::Matrix{T},
 							  kwargs...) where {T<:Real}
 	# call the heuristic with varying starting cities
 	n = size(dm, 1)
-	results_list = Vector{Tuple{Vector{Int}, T}}(n)
+	results_list = Vector{Tuple{Vector{Int}, T}}(undef, n)
 	Threads.@threads for i in 1:n
 		results_list[i] = heuristic(dm; kwargs..., repetitive_kw => i)
 	end

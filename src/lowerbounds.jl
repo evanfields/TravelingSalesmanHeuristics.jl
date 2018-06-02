@@ -10,8 +10,8 @@ function vertwise_bound(distmat::AbstractMatrix{T}) where {T<:Real}
 	# so make a doctored copy of the distance matrix with high costs on the diagonal
 	m = maximum(distmat)
 	distmat_nodiag = distmat + m * I
-	leaving = sum(minimum(distmat_nodiag, 2))
-	entering = sum(minimum(distmat_nodiag, 1))
+	leaving = sum(minimum(distmat_nodiag, dims = 2))
+	entering = sum(minimum(distmat_nodiag, dims = 1))
 	return maximum([leaving, entering])
 end
 
