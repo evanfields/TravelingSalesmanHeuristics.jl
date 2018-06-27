@@ -1,6 +1,7 @@
 using TravelingSalesmanHeuristics
-using Base.Test
-using Distances
+using Test
+using Random
+using LinearAlgebra
 
 ###
 # helpers
@@ -9,7 +10,7 @@ using Distances
 # generate a Euclidean distance matrix for n points in the unit square
 function generate_planar_distmat(n)
 	pts = rand(2, n)
-	return pairwise(Euclidean(), pts, pts)
+	dm = [norm(pts[:,i] - pts[:,j]) for i in 1:n, j in 1:n]
 end
 
 # test that a path is acceptable:
@@ -38,9 +39,7 @@ end
 ###
 
 function test_nearest_neighbor()
-	distmats = Array{Any}(2)
-	distmats[1] = generate_planar_distmat(10)
-	distmats[2] = generate_planar_distmat(2)
+	distmats = [generate_planar_distmat(10), generate_planar_distmat(2)]
 	
 	for dm in distmats
 		n = size(dm, 1)
@@ -50,7 +49,6 @@ function test_nearest_neighbor()
 		@test cost > 0
 		testpathvalidity(path, true)
 		# repetitive
-		path, cost = nearest_neighbor(dm, repetitive = true) # deprecated
 		path, cost = repetitive_heuristic(dm, nearest_neighbor)
 		@test cost > 0
 		testpathvalidity(path, true)
@@ -63,7 +61,7 @@ function test_nearest_neighbor()
 		@test cost > 0
 		testpathvalidity(path, false)
 		# fixed start, no loop
-		path, cost = nearest_neighbor(dm, closepath = false, firstcity = Nullable(randstartcity))
+		path, cost = nearest_neighbor(dm, closepath = false, firstcity = randstartcity)
 		@test cost > 0
 		testpathvalidity(path, false)
 	end
@@ -79,7 +77,6 @@ function test_cheapest_insertion()
 	@test cost > 0
 	testpathvalidity(path, true) # should be a closed path
 	# repetitive start
-	path, cost = cheapest_insertion(dm, repetitive = true) # deprecated
 	path, cost = repetitive_heuristic(dm, cheapest_insertion)
 	@test cost > 0
 	testpathvalidity(path, true)
@@ -119,7 +116,7 @@ function test_simulated_annealing()
 	init_path = collect(1:8)
 	push!(init_path, 1)
 	reverse!(init_path, 2, 6)
-	path, cost = simulated_annealing(dm; init_path = Nullable(init_path))
+	path, cost = simulated_annealing(dm; init_path = init_path)
 	@test cost > lowerbound(dm)
 	testpathvalidity(path, true) # still closed
 end
@@ -184,6 +181,7 @@ end
 ###
 # run
 ###
+println("Hello tester")
 srand(47)
 test_nearest_neighbor()
 test_cheapest_insertion()

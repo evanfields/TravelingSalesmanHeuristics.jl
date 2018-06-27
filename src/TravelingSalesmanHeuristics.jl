@@ -1,5 +1,7 @@
 module TravelingSalesmanHeuristics
 
+using Random, LinearAlgebra
+
 include("helpers.jl")
 include("simulated_annealing.jl")
 include("lowerbounds.jl")
@@ -25,7 +27,7 @@ See also...
 """
 function solve_tsp(distmat::AbstractMatrix{T}; quality_factor::Real = 40.0) where {T<:Real}
 	if quality_factor < 0 || quality_factor > 100
-		warn("quality_factor keyword passed to solve_tsp must be in [0,100]")
+		@warn "quality_factor keyword passed to solve_tsp must be in [0,100]"
 		quality_factor = clamp(quality_factor, 0, 100)
 	end
 	
@@ -67,15 +69,16 @@ function solve_tsp(distmat::AbstractMatrix{T}; quality_factor::Real = 40.0) wher
 	
 	# simulated annealing refinement, seeded with best so far
 	if quality_factor >= 80
-		_, bestind = findmin(pc[2] for pc in answers)
+		_, bestind = findmin([pc[2] for pc in answers])
 		bestpath, bestcost = answers[bestind]
 		nstart = ceil(Int, (quality_factor - 79)/5)
 		push!(answers,
-		      simulated_annealing(distmat; num_starts = nstart, init_path = Nullable(bestpath)))
+		      simulated_annealing(distmat; num_starts = nstart, init_path = bestpath)
+		)
 	end
 	
 	# pick best
-	_, bestind = findmin(pc[2] for pc in answers)
+	_, bestind = findmin([pc[2] for pc in answers])
 	return answers[bestind]
 end
 
@@ -91,34 +94,35 @@ where distmat[i,j] represents the distance from city `i` to city `j`. The matrix
 symmetric and can contain negative values. Return a tuple `(path, pathcost)`.
 
 # Optional keyword arguments:
-- `firstcity::Int`: specifies the city to begin the path on. Not specifying a value corresponds
-    to random selection. 
+- `firstcity::Union{Int, Nothing}`: specifies the city to begin the path on. Passing `nothing` or
+    not specifying a value corresponds to random selection. 
 - `closepath::Bool = true`: whether to include the arc from the last city visited back to the
     first city in cost calculations. If true, the first city appears first and last in the path.
 - `do2opt::Bool = true`: whether to refine the path found by 2-opt switches (corresponds to 
     removing path crossings in the planar Euclidean case).
 """
 function nearest_neighbor(distmat::AbstractMatrix{T} where {T<:Real};
-						  firstcity::Union{Int, Nullable{Int}} = rand(1:size(distmat, 1)),
+						  firstcity::Union{Int, Nothing} = rand(1:size(distmat, 1)),
 						  repetitive::Bool = false,
 						  closepath::Bool = true,
 						  do2opt::Bool = true)
 	# must have a square matrix 
-	numCities = check_square(distmat, "Must pass a square distance matrix to nearest_neighbor")
+	num_cities = check_square(distmat, "Must pass a square distance matrix to nearest_neighbor")
 	
-	# for backward compatibility, firstcity can be Int or Nullable{Int}
-	# extract an int value
-	if isa(firstcity, Int)
+	# extract a safe int value for firstcity
+	if firstcity == nothing # random first city
+		firstcityint = rand(1:num_cities)
+	else # an int was passed
 		firstcityint = firstcity
-	else # Nullable{Int}
-		warn("Calling `nearest_neighbor` with firstcity a Nullable{Int} is deprecated;" * 
-		     " pass the Int directly. A random city is used if no city is specified.")
-		firstcityint = isnull(firstcity) ? rand(1:numCities) : get(firstcity)
+		if !(1 <= firstcityint <= num_cities)
+			error("firstcity of $(firstcity) passed to `nearest_neighbor`" * 
+			      " out of range [1, $(num_cities)]")
+		end
 	end
 	
 	# calling with KW repetitive is deprecated; pass the call to repetitive_heuristic
 	if repetitive
-		warn("Calling `nearest_neighbor` with keyword `repetitive` is deprecated;'" *
+		@warn ("Calling `nearest_neighbor` with keyword `repetitive` is deprecated;'" *
 		     " instead call `repetitive_heuristic(distmat, nearest_neighbor; kwargs...)`")
 		return repetitive_heuristic(distmat, nearest_neighbor;
 		                            closepath = closepath, do2opt = do2opt)
@@ -130,7 +134,7 @@ function nearest_neighbor(distmat::AbstractMatrix{T} where {T<:Real};
 	
 	# cities to visit
 	citiesToVisit = collect(1:(firstcityint - 1))
-	append!(citiesToVisit, collect((firstcityint + 1):numCities))
+	append!(citiesToVisit, collect((firstcityint + 1):num_cities))
 	
 	# nearest neighbor loop
 	while !isempty(citiesToVisit)
@@ -207,35 +211,36 @@ Complete a tour using cheapest insertion with a single-city loop as the initial 
 tuple `(path, cost)`.
 
 ### Optional keyword arguments:
-- `firstCity::Int`: specifies the city to begin the path on. Not specifying a value corresponds
-    to random selection.
+- `firstCity::Union{Int, Nothing}`: specifies the city to begin the path on. Passing `nothing` or
+    not specifying a value corresponds to random selection.
 - `do2opt::Bool = true`: whether to improve the path found by 2-opt swaps.
 """
 function cheapest_insertion(distmat::AbstractMatrix{T} where{T<:Real};
-							firstcity::Union{Int, Nullable{Int}} = rand(1:size(distmat, 1)),
+							firstcity::Union{Int, Nothing} = rand(1:size(distmat, 1)),
 							repetitive::Bool = false,
 							do2opt::Bool = true)
 	#infer size
-	n = size(distmat, 1)
+	num_cities = size(distmat, 1)
 
 	# calling with KW repetitive is deprecated; pass the call to repetitive_heuristic
 	if repetitive
-		warn("Calling `cheapest_insertionr` with keyword `repetitive` is deprecated;'" *
-		     " instead call `repetitive_heuristic(distmat, cheapest_insertion; kwargs...)`")
+		@warn "Calling `cheapest_insertionr` with keyword `repetitive` is deprecated;'" *
+		     " instead call `repetitive_heuristic(distmat, cheapest_insertion; kwargs...)`"
 		return repetitive_heuristic(distmat, cheapest_insertion; do2opt = do2opt)
 	end
 	
-	# for backward compatibility, firstcity can be Int or Nullable{Int}
-	# extract an int value
-	if isa(firstcity, Int)
+	# extract a safe int value for firstcity
+	if firstcity == nothing # random first city
+		firstcityint = rand(1:num_cities)
+	else # an int was passed
 		firstcityint = firstcity
-	else # Nullable{Int}
-		warn("Calling `nearest_neighbor` with firstcity a Nullable{Int} is deprecated;" * 
-		     " pass the Int directly. A random city is used if no city is specified.")
-		firstcityint = isnull(firstcity) ? rand(1:n) : get(firstcity)
+		if !(1 <= firstcityint <= num_cities)
+			error("firstcity of $(firstcity) passed to `cheapest_insertion`" * 
+			      " out of range [1, $(num_cities)]")
+		end
 	end
 	
-	# okay, we're not repetitive. Do we pick first city at random?
+	# okay, we're not repetitive, put a loop on the first city
 	path, cost = cheapest_insertion(distmat, [firstcityint, firstcityint])
 	
 	# user may have asked for 2-opt refinement
