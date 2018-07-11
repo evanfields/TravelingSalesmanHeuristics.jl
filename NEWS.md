@@ -1,3 +1,6 @@
+## 2018-7-11 ##
+- New version with support for Julia 0.7; dropped support for previous Julia versions.
+
 ## 2018-1-25 ##
 - The package now has proper documentation (built with Documenter).
 - A wider variety of types should be supported; e.g. your distance matrix can have `Rational` arguments, initial paths can be `AbstractVectors`, etc.
