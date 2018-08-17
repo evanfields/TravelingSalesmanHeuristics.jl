@@ -1,7 +1,8 @@
 This page gives some examples of using TravelingSalesmanHeuristics. For convenience and so we can easily visualize the problems, we'll use planar Euclidean instances generated as follows:
 ```
+using Random
 function generate_instance(n)
-	srand(47)
+	Random.seed!(47)
 	pts = rand(2, n)
 	distmat = [norm(pts[:,i] - pts[:,j]) for i in 1:n, j in 1:n]
 	return pts, distmat
@@ -29,7 +30,7 @@ plot_instance(pts)
 
 A quick solution (run it twice to avoid measuring precompilation):
 ```
-srand(47)
+Random.seed!(47)
 @time path, cost = solve_tsp(distmat; quality_factor = 5)
       0.000050 seconds (34 allocations: 3.797 KiB)
     ([4, 19, 17, 14, 5, 1, 20, 9, 16, 2  …  6, 10, 15, 11, 18, 8, 12, 13, 3, 4], 3.8300484331007696)
@@ -39,7 +40,7 @@ plot_solution(pts, path)
 
 It looks like we've found the optimum path, and a higher `quality_factor` doens't give a better objective:
 ```
-srand(47)
+Random.seed!(47)
 @time path, cost = solve_tsp(distmat; quality_factor = 80)
       0.006352 seconds (92.43 k allocations: 1.551 MiB)
     ([2, 16, 9, 20, 1, 5, 14, 17, 19, 4  …  13, 12, 8, 18, 11, 15, 10, 6, 7, 2], 3.830048433100769)
