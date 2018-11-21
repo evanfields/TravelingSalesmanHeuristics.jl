@@ -211,8 +211,8 @@ Complete a tour using cheapest insertion with a single-city loop as the initial 
 tuple `(path, cost)`.
 
 ### Optional keyword arguments:
-- `firstCity::Union{Int, Nothing}`: specifies the city to begin the path on. Passing `nothing` or
-    not specifying a value corresponds to random selection.
+- `firstcity::Union{Int, Nothing}`: specifies the city to begin the path on. Passing `nothing` or
+    not specifying a value corresponds to random selection. 
 - `do2opt::Bool = true`: whether to improve the path found by 2-opt swaps.
 """
 function cheapest_insertion(distmat::AbstractMatrix{T} where{T<:Real};
