@@ -75,26 +75,9 @@ end
 function pathcost_rev(distmat::Matrix{T}, path::AbstractArray{S},
                       revLow::Int, revHigh::Int) where {T<:Real, S<:Integer}
 	cost = zero(T)
-	# if there's an initial unreversed section
-	if revLow > 1
-		for i in 1:(revLow - 2)
-			@inbounds cost += distmat[path[i], path[i+1]]
-		end
-		# from end of unreversed section to beginning of reversed section
-		@inbounds cost += distmat[path[revLow - 1], path[revHigh]]
-	end
-	# main reverse section
-	for i in revHigh:-1:(revLow + 1)
-		@inbounds cost += distmat[path[i], path[i-1]]
-	end
-	# if there's an unreversed section after the reversed bit
-	n = length(path)
-	if revHigh < length(path)
-		# from end of reversed section back to regular
-		@inbounds cost += distmat[path[revLow], path[revHigh + 1]]
-		for i in (revHigh + 1):(n-1)
-			@inbounds cost += distmat[path[i], path[i+1]]
-		end
+	reverse!(path, revLow, revHigh)
+	for i in  lb:(ub - 1)
+		@inbounds cost += distmat[path[i], path[i+1]]
 	end
 	return cost
 end
