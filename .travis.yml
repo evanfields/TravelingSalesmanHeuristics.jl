@@ -3,19 +3,14 @@ language: julia
 os:
   - linux
 julia:
-  - 0.7
-  - 1.0
+  - 1.1
   - nightly
 matrix:
     allow_failures:
         - julia: nightly
 notifications:
   email: false
-# uncomment the following lines to override the default test script
-#script:
-#  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-#  - julia -e 'Pkg.clone(pwd()); Pkg.build("TravelingSalesmanHeuristics"); Pkg.test("TravelingSalesmanHeuristics"; coverage=true)'
 after_success:
-- julia -e 'cd(Pkg.dir("TravelingSalesmanHeuristics")); Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'
-- julia -e 'ps=Pkg.PackageSpec(name="Documenter", version="0.19"); Pkg.add(ps); Pkg.pin(ps)'
-- julia -e 'cd(Pkg.dir("TravelingSalesmanHeuristics")); include(joinpath("docs", "make.jl"))'
+- julia -e 'using Pkg; cd(Pkg.dir("TravelingSalesmanHeuristics")); Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'
+- julia -e 'using Pkg; ps=Pkg.PackageSpec(name="Documenter", version="0.19"); Pkg.add(ps); Pkg.pin(ps)'
+- julia -e 'using Pkg; cd(Pkg.dir("TravelingSalesmanHeuristics")); include(joinpath("docs", "make.jl"))'
