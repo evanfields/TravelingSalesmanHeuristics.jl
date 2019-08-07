@@ -11,6 +11,6 @@ matrix:
 notifications:
   email: false
 after_success:
-- julia -e 'cd(Pkg.dir("TravelingSalesmanHeuristics")); Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'
-- julia -e 'ps=Pkg.PackageSpec(name="Documenter", version="0.19"); Pkg.add(ps); Pkg.pin(ps)'
-- julia -e 'cd(Pkg.dir("TravelingSalesmanHeuristics")); include(joinpath("docs", "make.jl"))'
+- julia -e 'using Pkg; cd(Pkg.dir("TravelingSalesmanHeuristics")); Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'
+- julia -e 'using Pkg; ps=Pkg.PackageSpec(name="Documenter", version="0.19"); Pkg.add(ps); Pkg.pin(ps)'
+- julia -e 'using Pkg; cd(Pkg.dir("TravelingSalesmanHeuristics")); include(joinpath("docs", "make.jl"))'
