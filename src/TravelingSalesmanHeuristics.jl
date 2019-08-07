@@ -23,7 +23,7 @@ tend to lead to better solutions found at the cost of more computation time.
     typically the case. A `quality_factor` of 100 neither guarantees an optimal solution
     nor the best solution  that can be found via extensive use of the methods in this package.
 
-See also...
+See also: individual heuristic methods such as [`farthest_insertion`](@ref)
 """
 function solve_tsp(distmat::AbstractMatrix{T}; quality_factor::Real = 40.0) where {T<:Real}
     if quality_factor < 0 || quality_factor > 100
@@ -327,7 +327,7 @@ longer reduces the cost. Return a tuple `(improved_path, improved_cost)`.
 On large problem instances this heuristic can be slow, but it is highly recommended on small and
 medium problem instances.
 
-See also `simulated_annealing` for another path generation heuristic.
+See also [`simulated_annealing`](@ref) for another path generation heuristic.
 """
 function two_opt(distmat::AbstractMatrix{T}, path::AbstractVector{S}) where {T<:Real, S<:Integer}
     # size checks
