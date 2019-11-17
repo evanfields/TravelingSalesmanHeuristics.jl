@@ -1,5 +1,7 @@
 This page gives some examples of using TravelingSalesmanHeuristics. For convenience and so we can easily visualize the problems, we'll use planar Euclidean instances generated as follows:
 ```
+using TravelingSalesmanHeuristics
+using LinearAlgebra
 using Random
 function generate_instance(n)
 	Random.seed!(47)
