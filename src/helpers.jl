@@ -38,7 +38,7 @@ each of the `n` nearest neighbor paths.
     The repetitive heuristic calls are parallelized with threads. For optimum speed make sure
     Julia is running with multiple threads.
 """
-function repetitive_heuristic(dm::Matrix{T},
+function repetitive_heuristic(dm::AbstractMatrix{T},
                               heuristic::Function,
                               repetitive_kw = :firstcity;
                               kwargs...) where {T<:Real}
@@ -62,7 +62,7 @@ end
 # optionally specify the bounds for the subpath we want the cost of
 # defaults to the whole path
 # but when calculating reversed path costs can help to have subpath costs
-function pathcost(distmat::Matrix{T}, path::AbstractArray{S},
+function pathcost(distmat::AbstractMatrix{T}, path::AbstractArray{S},
                   lb::Int = 1, ub::Int = length(path)) where {T<:Real, S<:Integer}
     cost = zero(T)
     for i in lb:(ub - 1)
@@ -70,9 +70,10 @@ function pathcost(distmat::Matrix{T}, path::AbstractArray{S},
     end
     return cost
 end
-# calculate the cost of reversing part of a path
-# cost of walking along the entire path specified but reversing the sequence from revLow to revHigh, inclusive
-function pathcost_rev(distmat::Matrix{T}, path::AbstractArray{S},
+
+"Compute the cost of walking along the entire path specified but reversing the
+sequence from `revLow` to `revHigh`, inclusive."
+function pathcost_rev(distmat::AbstractMatrix{T}, path::AbstractArray{S},
                       revLow::Int, revHigh::Int) where {T<:Real, S<:Integer}
     cost = zero(T)
     # if there's an initial unreversed section
@@ -98,6 +99,71 @@ function pathcost_rev(distmat::Matrix{T}, path::AbstractArray{S},
     end
     return cost
 end
+
+"Compute the change in cost from reversing the subset of the path from indices
+`revLow` to `revHigh`, inclusive."
+function pathcost_rev_delta(distmat::AbstractMatrix{T}, path::AbstractArray{S},
+                      revLow::Int, revHigh::Int) where {T<:Real, S<:Integer}
+    cost_delta = zero(T)
+    # if there's an initial unreversed section
+    if revLow > 1
+        # new step onto the reversed section
+        @inbounds cost_delta += distmat[path[revLow - 1], path[revHigh]]
+        # no longer pay the cost of old step onto the reversed section
+        @inbounds cost_delta -= distmat[path[revLow - 1], path[revLow]]
+    end
+    # new cost of the reversed section
+    for i in revHigh:-1:(revLow + 1)
+        @inbounds cost_delta += distmat[path[i], path[i-1]]
+    end
+    # no longer pay the forward cost of the reversed section
+    for i in revLow:(revHigh - 1)
+        @inbounds cost_delta -= distmat[path[i], path[i+1]]
+       end
+    # if there's an unreversed section after the reversed bit
+    if revHigh < length(path)
+        # new step out of the reversed section
+        @inbounds cost_delta += distmat[path[revLow], path[revHigh + 1]]
+        # no longer pay the old cost of stepping out of the reversed section
+        @inbounds cost_delta -= distmat[path[revHigh], path[revHigh + 1]]
+    end
+    return cost_delta
+end
+"Specialized for symmetric matrices: compute the change in cost from
+reversing the subset of the path from indices `revLow` to `revHigh`,
+inclusive."
+function pathcost_rev_delta(distmat::Symmetric, path::AbstractArray{S},
+                      revLow::Int, revHigh::Int) where {S<:Integer}
+    cost_delta = zero(eltype(distmat))
+    # if there's an initial unreversed section
+    if revLow > 1
+        # new step onto the reversed section
+        @inbounds cost_delta += distmat[path[revLow - 1], path[revHigh]]
+        # no longer pay the cost of old step onto the reversed section
+        @inbounds cost_delta -= distmat[path[revLow - 1], path[revLow]]
+    end
+    # The actual cost of walking along the reversed section doesn't change
+    # because the distance matrix is symmetric.
+    # if there's an unreversed section after the reversed bit
+    if revHigh < length(path)
+        # new step out of the reversed section
+        @inbounds cost_delta += distmat[path[revLow], path[revHigh + 1]]
+        # no longer pay the old cost of stepping out of the reversed section
+        @inbounds cost_delta -= distmat[path[revHigh], path[revHigh + 1]]
+    end
+    return cost_delta
+end
+
+"Due to floating point imprecision, various path refinement heuristics may get
+stuck in infinite loops as both doing and un-doing a particular change apparently
+improves the path cost. For example, floating point error may suggest that reversing
+and un-reversing a path for a symmetric TSP instance improves the cost slightly. To
+avoid such false-improvement infinite loops, limit refinement heuristics to
+improvements with some minimum magnitude defined by the element type of the distance
+matrix."
+improvement_threshold(T::Type{<:Integer}) = one(T)
+improvement_threshold(T::Type{<:AbstractFloat}) = sqrt(eps(one(T)))
+improvement_threshold(T::Type{<:Real}) = sqrt(eps(1.0))
 
 #Cost of inserting city `k` after index `after` in path `path` with costs `distmat`.
 function inscost(k::Int, after::Int, path::AbstractArray{S}, distmat::Matrix{T}) where {T<:Real, S<:Integer}

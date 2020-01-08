@@ -34,7 +34,6 @@ function simulated_annealing(distmat::Matrix{T} where {T<:Real};
     function sahelper!(path)
         temp = init_temp / cool_rate # divide by cool_rate so when we first multiply we get init_temp
         n = size(distmat, 1)
-        cost_cur = pathcost(distmat, path)
 
         for i in 1:steps
             temp *= cool_rate
@@ -45,16 +44,15 @@ function simulated_annealing(distmat::Matrix{T} where {T<:Real};
             if first > last
                 first, last = last, first
             end
-            cost_other = pathcost_rev(distmat, path, first, last)
-            @fastmath accept = cost_other < cost_cur ? true : rand() < exp((cost_cur - cost_other) / temp)
+            cost_delta = pathcost_rev_delta(distmat, path, first, last)
+            @fastmath accept = cost_delta < 0 ? true : rand() < exp(-cost_delta / temp)
             # should we accept?
             if accept
                 reverse!(path, first, last)
-                cost_cur = cost_other
             end
         end
 
-        return path, cost_cur
+        return path, pathcost(distmat, path)
     end
 
     # unpack the initial path
