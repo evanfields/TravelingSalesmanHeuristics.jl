@@ -330,6 +330,12 @@ medium problem instances.
 See also [`simulated_annealing`](@ref) for another path generation heuristic.
 """
 function two_opt(distmat::AbstractMatrix{T}, path::AbstractVector{S}) where {T<:Real, S<:Integer}
+    # We can accelerate if the instance is symmetric
+    issymmetric(distmat) && (distmat = Symmetric(distmat))
+    return _two_opt_logic(distmat, path)
+end
+
+function _two_opt_logic(distmat::AbstractMatrix{T}, path::AbstractVector{S}) where {T<:Real, S<:Integer}
     # size checks
     n = length(path)
     if size(distmat, 1) != size(distmat, 2)
@@ -338,6 +344,9 @@ function two_opt(distmat::AbstractMatrix{T}, path::AbstractVector{S}) where {T<:
 
     # don't modify input
     path = copy(path) # Int is a bitstype
+    
+    # how much must each swap improve the cost?
+    thresh = improvement_threshold(T)
 
     # main loop
     # check every possible switch until no 2-swaps reduce objective
@@ -347,16 +356,15 @@ function two_opt(distmat::AbstractMatrix{T}, path::AbstractVector{S}) where {T<:
     # if the path is not a cycle, we should respect the endpoints
     switchLow = 2
     switchHigh = n - 1
-    prevCost = Inf
-    curCost = pathcost(distmat, path)
-    while prevCost > pathcost(distmat, path)
-        prevCost = curCost
+    need_to_loop = true # always look for swaps at least once
+    while need_to_loop
+        need_to_loop = false
         # we can't change the first
         for i in switchLow:(switchHigh-1)
             for j in switchHigh:-1:(i+1)
-                altCost = pathcost_rev(distmat, path, i, j)
-                if altCost < curCost
-                    curCost = altCost
+                cost_change = pathcost_rev_delta(distmat, path, i, j)
+                if cost_change + thresh <= 0
+                    need_to_loop = true
                     reverse!(path, i, j)
                 end
             end

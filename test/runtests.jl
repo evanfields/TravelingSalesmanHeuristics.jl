@@ -1,4 +1,5 @@
 using TravelingSalesmanHeuristics
+const TSP = TravelingSalesmanHeuristics
 using Test
 using Random
 using LinearAlgebra
@@ -135,13 +136,14 @@ end
 function test_path_costs()
 	dm = [1 2 3; 4 5 6; 7 8 9]
 	p1 = [1, 2, 3, 1]
-	@test TravelingSalesmanHeuristics.pathcost(dm, p1) == 2 + 6 + 7
+    orig_cost = 2 + 6 + 7
+	@test TSP.pathcost(dm, p1) == orig_cost
 	# various reverse indices to test
 	revs = [(1,4), (2,3), (2,4), (3,3)]
 	for rev in revs
 		path_rev = reverse(p1, rev[1], rev[2])
-		@test TravelingSalesmanHeuristics.pathcost(dm, path_rev) == 
-			  TravelingSalesmanHeuristics.pathcost_rev(dm, p1, rev[1], rev[2])
+		@test TSP.pathcost(dm, path_rev) ≈
+			  orig_cost + TSP.pathcost_rev_delta(dm, p1, rev[1], rev[2])
 	end
 end
 

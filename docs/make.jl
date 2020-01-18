@@ -1,7 +1,7 @@
 using Documenter, TravelingSalesmanHeuristics
 
 makedocs(
-	format = :html,
+	format = Documenter.HTML(),
 	sitename = "Traveling Salesman Heuristics",
 	pages = [
 		"Home" => "index.md",
@@ -15,6 +15,6 @@ deploydocs(
     target = "build",
     deps   = nothing,
     make   = nothing,
-	julia  = "0.7",
+	julia  = "1.1",
 	osname = "linux"
 )
