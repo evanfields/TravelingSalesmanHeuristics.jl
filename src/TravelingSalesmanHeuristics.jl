@@ -357,7 +357,6 @@ function _two_opt_logic(distmat::AbstractMatrix{T}, path::AbstractVector{S}) whe
     switchLow = 2
     switchHigh = n - 1
     need_to_loop = true # always look for swaps at least once
-    swaps = 0
     while need_to_loop
         need_to_loop = false
         # we can't change the first

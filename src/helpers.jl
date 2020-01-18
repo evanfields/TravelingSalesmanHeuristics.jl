@@ -71,39 +71,10 @@ function pathcost(distmat::AbstractMatrix{T}, path::AbstractArray{S},
     return cost
 end
 
-"Compute the cost of walking along the entire path specified but reversing the
-sequence from `revLow` to `revHigh`, inclusive."
-function pathcost_rev(distmat::AbstractMatrix{T}, path::AbstractArray{S},
-                      revLow::Int, revHigh::Int) where {T<:Real, S<:Integer}
-    cost = zero(T)
-    # if there's an initial unreversed section
-    if revLow > 1
-        for i in 1:(revLow - 2)
-            @inbounds cost += distmat[path[i], path[i+1]]
-        end
-        # from end of unreversed section to beginning of reversed section
-        @inbounds cost += distmat[path[revLow - 1], path[revHigh]]
-    end
-    # main reverse section
-    for i in revHigh:-1:(revLow + 1)
-        @inbounds cost += distmat[path[i], path[i-1]]
-    end
-    # if there's an unreversed section after the reversed bit
-    n = length(path)
-    if revHigh < length(path)
-        # from end of reversed section back to regular
-        @inbounds cost += distmat[path[revLow], path[revHigh + 1]]
-        for i in (revHigh + 1):(n-1)
-            @inbounds cost += distmat[path[i], path[i+1]]
-        end
-    end
-    return cost
-end
-
 "Compute the change in cost from reversing the subset of the path from indices
 `revLow` to `revHigh`, inclusive."
 function pathcost_rev_delta(distmat::AbstractMatrix{T}, path::AbstractArray{S},
-                      revLow::Int, revHigh::Int) where {T<:Real, S<:Integer}
+                            revLow::Int, revHigh::Int) where {T<:Real, S<:Integer}
     cost_delta = zero(T)
     # if there's an initial unreversed section
     if revLow > 1
@@ -156,11 +127,11 @@ end
 
 "Due to floating point imprecision, various path refinement heuristics may get
 stuck in infinite loops as both doing and un-doing a particular change apparently
-improves the path cost. For example, floating point error may suggest that reversing
-and un-reversing a path for a symmetric TSP instance improves the cost slightly. To
-avoid such false-improvement infinite loops, limit refinement heuristics to
-improvements with some minimum magnitude defined by the element type of the distance
-matrix."
+improves the path cost. For example, floating point error may suggest that both 
+reversing and un-reversing a path for a symmetric TSP instance improves the cost 
+slightly. To avoid such false-improvement infinite loops, limit refinement heuristics
+to improvements with some minimum magnitude defined by the element type of the
+distance matrix."
 improvement_threshold(T::Type{<:Integer}) = one(T)
 improvement_threshold(T::Type{<:AbstractFloat}) = sqrt(eps(one(T)))
 improvement_threshold(T::Type{<:Real}) = sqrt(eps(1.0))
