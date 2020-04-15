@@ -27,4 +27,4 @@ The simplest way to use this package is with the `solve_tsp` function:
 ```@docs
 solve_tsp
 ```
-
+See [here](https://github.com/ericphanson/TravelingSalesmanBenchmarks.jl) for some benchmarks of different `quality_factor`s on various instances.
