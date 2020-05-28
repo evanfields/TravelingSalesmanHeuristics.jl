@@ -1,3 +1,8 @@
+## 2020-5-28 ##
+- Various bugfixes and housekeeping over the last almost 2 years.
+- Some heuristics will now run much faster on symmetric problems.
+- Only Julia versions >= 1.0 are supported.
+
 ## 2018-7-11 ##
 - New version with support for Julia 0.7; dropped support for previous Julia versions.
 
