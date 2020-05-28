@@ -178,6 +178,10 @@ function test_atypical_types()
 	initpath = 1:2:9 # not a Vector, but <:AbstractVector{<:Int}
 	p, c = cheapest_insertion(dm, initpath)
 	testpathvalidity(p, false)
+    # Symmetric matrix type. <: AbstractMatrix, not a matrix.
+    dm = Symmetric(rand(15,15))
+    p, c = solve_tsp(dm; quality_factor = 60)
+    testpathvalidity(p, true)
 end
 
 ###
