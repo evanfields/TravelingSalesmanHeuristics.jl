@@ -136,8 +136,13 @@ improvement_threshold(T::Type{<:Integer}) = one(T)
 improvement_threshold(T::Type{<:AbstractFloat}) = sqrt(eps(one(T)))
 improvement_threshold(T::Type{<:Real}) = sqrt(eps(1.0))
 
-#Cost of inserting city `k` after index `after` in path `path` with costs `distmat`.
-function inscost(k::Int, after::Int, path::AbstractArray{S}, distmat::Matrix{T}) where {T<:Real, S<:Integer}
+"Cost of inserting city `k` after index `after` in path `path` with costs `distmat`."
+function inscost(
+    k::Int,
+    after::Int,
+    path::AbstractArray{<:Integer},
+    distmat::AbstractMatrix{<:Real}
+)
     return distmat[path[after], k] +
            distmat[k, path[after + 1]] -
            distmat[path[after], path[after + 1]]
