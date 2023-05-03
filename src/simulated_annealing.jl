@@ -79,8 +79,8 @@ function simulated_annealing(distmat::Matrix{T} where {T<:Real};
     return path, cost
 end
 
-function randpath(n)
-    path = 1:n |> collect |> shuffle
+function randpath(n::Int)
+    path = shuffle(1:n)
     push!(path, path[1]) # loop
     return path
 end
