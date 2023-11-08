@@ -1,6 +1,5 @@
 # TravelingSalesmanHeuristics
 
-[![Build Status](https://travis-ci.org/evanfields/TravelingSalesmanHeuristics.jl.svg?branch=master)](https://travis-ci.org/evanfields/TravelingSalesmanHeuristics.jl)
 [![codecov.io](https://codecov.io/github/evanfields/TravelingSalesmanHeuristics.jl/coverage.svg?branch=master)](https://codecov.io/github/evanfields/TravelingSalesmanHeuristics.jl?branch=master)
 [![Project Status: Active – The project has reached a stable, usable state and is receiving occasional updates.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![](https://img.shields.io/badge/docs-latest-blue.svg)](https://evanfields.github.io/TravelingSalesmanHeuristics.jl/latest)
