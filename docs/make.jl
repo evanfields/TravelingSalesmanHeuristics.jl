@@ -1,3 +1,4 @@
+push!(LOAD_PATH,"../src/")
 using Documenter, TravelingSalesmanHeuristics
 
 makedocs(
@@ -11,10 +12,5 @@ makedocs(
 )
 
 deploydocs(
-    repo   = "github.com/evanfields/TravelingSalesmanHeuristics.jl.git",
-    target = "build",
-    deps   = nothing,
-    make   = nothing,
-	julia  = "1.1",
-	osname = "linux"
+    repo = "github.com/evanfields/TravelingSalesmanHeuristics.jl.git",
 )
