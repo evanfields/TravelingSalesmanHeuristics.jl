@@ -17,10 +17,16 @@ A word of warning: the heuristics implemented are
 `TravelingSalesmanHeuristics` is a registered package, so you can install it with the REPL's `Pkg` mode: `]add TravelingSalesmanHeuristics`. Load it with `using TravelingSalesmanHeuristics`.
 
 ## Usage
-All problems are specified through a square distance matrix `D` where `D[i,j]` represents the cost of traveling from the `i`-th to the `j`-th city. Your distance matrix need not be symmetric and could probably even contain negative values, though I make no guarantee about behavior when using negative values.
+All problems are specified through a square distance matrix `D` where `D[i,j]` represents the cost of traveling from the `i`-th to the `j`-th city. Your distance matrix need not be symmetric or non-negative.
 
 !!! note
     Because problems are specified by dense distance matrices, this package is not well suited to problem instances with sparse distance matrix structure, i.e. problems with large numbers of cities where each city is connected to few other cities.
+
+!!! tip
+    TravelingSalesmanHeuristics supports distance matrices with arbitrary real element types: integers, floats, rationals, etc. However, mixing element types in your distance matrix is not recommended for performance reasons.
+
+!!! danger
+    TravelingSalesmanHeuristics does _not_ support distance matrices with arbitrary indexing; indices must be `1:n` in both dimensions for `n` cities.
 
 The simplest way to use this package is with the `solve_tsp` function:
 

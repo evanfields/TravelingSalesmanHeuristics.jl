@@ -23,6 +23,9 @@ tend to lead to better solutions found at the cost of more computation time.
     typically the case. A `quality_factor` of 100 neither guarantees an optimal solution
     nor the best solution  that can be found via extensive use of the methods in this package.
 
+!!! danger
+    TravelingSalesmanHeuristics does not support distance matrices with arbitrary indexing; indices must be `1:n` in both dimensions for `n` cities.
+
 See also: individual heuristic methods such as [`farthest_insertion`](@ref)
 """
 function solve_tsp(distmat::AbstractMatrix{T}; quality_factor::Real = 40.0) where {T<:Real}
