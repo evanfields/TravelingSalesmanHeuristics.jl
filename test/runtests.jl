@@ -11,7 +11,7 @@ using LinearAlgebra
 # generate a Euclidean distance matrix for n points in the unit square
 function generate_planar_distmat(n)
     pts = rand(2, n)
-    dm = [norm(pts[:,i] - pts[:,j]) for i in 1:n, j in 1:n]
+    return [norm(pts[:,i] - pts[:,j]) for i in 1:n, j in 1:n]
 end
 
 # test that a path is acceptable:
