@@ -11,7 +11,7 @@ using LinearAlgebra
 # generate a Euclidean distance matrix for n points in the unit square
 function generate_planar_distmat(n)
     pts = rand(2, n)
-    dm = [norm(pts[:,i] - pts[:,j]) for i in 1:n, j in 1:n]
+    return [norm(pts[:,i] - pts[:,j]) for i in 1:n, j in 1:n]
 end
 
 # test that a path is acceptable:
@@ -147,6 +147,13 @@ function test_path_costs()
     end
 end
 
+function test_rotate()
+    # rotate a circuit
+    @test TSP.rotate_circuit([11,12,13,11], 12) == [12,13,11,12]
+    # not a circuit
+    @test_throws DomainError TSP.rotate_circuit([1,2,3,4], 2)
+end
+
 function test_solve_tsp()
     dm = rand(10,10)
     quality_factors = [-1, 0, 1.1, 35, 101]
@@ -195,6 +202,7 @@ test_farthest_insertion()
 test_simulated_annealing()
 test_bounds()
 test_path_costs()
+test_rotate()
 test_solve_tsp()
 test_two_opt()
 test_atypical_types()

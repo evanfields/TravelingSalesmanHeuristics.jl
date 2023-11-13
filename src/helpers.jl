@@ -12,11 +12,29 @@ function check_square(m, msg)
 end
 
 """
+    rotate_circuit(circuit::AbstractArray{<:Integer}, desired_start::Integer)
+
+"Rotate" a closed circuit so that it starts (and ends) at `desired_start`. E.g.
+`rotate_circuit([1,2,3,1], 2) == [2,3,1,2]`. `circuit` must be a closed path.
+"""
+function rotate_circuit(circuit, desired_start)
+    if first(circuit) != last(circuit)
+        throw(DomainError(circuit, "Circuit passed to rotate_circuit is not closed."))
+    end
+    first(circuit) == desired_start && return copy(circuit)
+    start_ind = findfirst(circuit .== desired_start)
+    return vcat(
+        circuit[start_ind:end],
+        circuit[2:start_ind]
+    )
+end
+
+"""
     legal_circuit(circuit::AbstractArray{<:Integer})
 
 Check that an array of integers is a valid circuit. A valid circuit over `n` locations has
-length `n+1`. The first `n` entries are a permutation of `1, ..., n`, and the `(n+1)`-st entry
-is equal to the first entry.
+length `n+1`. The first `n` entries are a permutation of `1, ..., n`, and the `(n+1)`-st
+entry is equal to the first entry.
 """
 function legal_circuit(circuit)
     n = length(circuit) - 1
@@ -134,7 +152,7 @@ to improvements with some minimum magnitude defined by the element type of the
 distance matrix."
 improvement_threshold(T::Type{<:Integer}) = one(T)
 improvement_threshold(T::Type{<:AbstractFloat}) = sqrt(eps(one(T)))
-improvement_threshold(T::Type{<:Real}) = sqrt(eps(1.0))
+improvement_threshold(::Type{<:Real}) = sqrt(eps(1.0))
 
 "Cost of inserting city `k` after index `after` in path `path` with costs `distmat`."
 function inscost(
