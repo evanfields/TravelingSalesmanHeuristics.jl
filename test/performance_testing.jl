@@ -46,6 +46,8 @@ function _distmat_from_pts(pts)
     return [norm(pts[:,i] - pts[:,j]) for i in 1:n, j in 1:n]
 end
 
+"""Generate a list of Euclidean test cases. For each dimension and number of points,
+generate a test case in a unit square, a squashed rectangle, and a spherical shell."""
 function generate_cases_euclidean(;
     seed = 47,
     dimensions = [2, 5, 15],
@@ -74,6 +76,9 @@ function generate_cases_euclidean(;
     return cases
 end
 
+"""Generate non-Euclidean test cases by starting with the Eculidean cases
+and adding IID noise to each distance measurement, producing cases which are
+nonsymmetric and may have negative travel costs."""
 function generate_cases_euclidean_plus_noise(;
     dists = [
         Normal(),
