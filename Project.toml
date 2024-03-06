@@ -1,7 +1,7 @@
 name = "TravelingSalesmanHeuristics"
 uuid = "8c8f4381-2cdd-507c-846c-be2bcff6f45f"
 license = "MIT"
-version = "0.3.3"
+version = "0.3.4"
 
 [deps]
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
