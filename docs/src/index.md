@@ -25,9 +25,6 @@ All problems are specified through a square distance matrix `D` where `D[i,j]` r
 !!! tip
     TravelingSalesmanHeuristics supports distance matrices with arbitrary real element types: integers, floats, rationals, etc. However, mixing element types in your distance matrix is not recommended for performance reasons.
 
-!!! danger
-    TravelingSalesmanHeuristics does _not_ support distance matrices with arbitrary indexing; indices must be `1:n` in both dimensions for `n` cities.
-
 The simplest way to use this package is with the `solve_tsp` function:
 
 ```@docs
